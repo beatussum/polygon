@@ -1,0 +1,10 @@
+[package]
+authors = ["Mattéo Rossillol‑‑Laruelle <beatussum@protonmail.com>"]
+categories = ["command-line-utilities", "mathematics"]
+description = "The 2023-2024 algorithmic project at ENSIMAG written in Rust"
+edition = "2021"
+keywords = ["ENSIMAG", "polygon"]
+license = "GPL-3.0+"
+name = "polygon"
+repository = "https://github.com/beatussum/polygon/"
+version = "0.9.0"
