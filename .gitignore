@@ -14,4 +14,8 @@
 # this program. If not, see <https://www.gnu.org/licenses/>.
 
 
+# Cargo
 /target
+
+# Visual Studio Code
+/.vscode
