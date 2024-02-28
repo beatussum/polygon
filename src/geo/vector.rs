@@ -7,6 +7,12 @@ use derive_more::{Display, Into, From, Neg, Sum};
 use std::ops::{Mul, MulAssign};
 use std::ops::{Div, DivAssign};
 
+#[derive(Copy, Clone)]
+#[derive(Debug)]
+#[derive(Display)]
+#[display(fmt = "invalid norm value: it cannot be equal to zero")]
+pub struct ZeroNormError;
+
 #[derive(Add, AddAssign)]
 #[derive(Sub, SubAssign)]
 #[derive(Copy, Clone)]
@@ -37,10 +43,10 @@ impl Vector {
     pub fn norm(&self) -> Unit { (self.x.powi(2) + self.y.powi(2)).sqrt() }
     pub fn orthogonal(&self) -> Self { Self { x: -self.y, y: self.x } }
 
-    pub fn unit(self) -> Result<Self, &'static str>
+    pub fn unit(self) -> Result<Self, ZeroNormError>
     {
         if self.norm() == 0. {
-            Err("attempt to divide by zero")
+            Err(ZeroNormError)
         } else {
             Ok(self / self.norm())
         }
