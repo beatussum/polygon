@@ -74,6 +74,12 @@ impl Mul<Unit> for Vector {
     }
 }
 
+impl Mul<Vector> for Unit {
+    type Output = Vector;
+
+    fn mul(self, rhs: Vector) -> Self::Output { rhs * self }
+}
+
 impl MulAssign<Unit> for Vector {
     fn mul_assign(&mut self, rhs: Unit)
     {
