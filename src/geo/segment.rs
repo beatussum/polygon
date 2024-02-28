@@ -1,127 +1,55 @@
-mod point
-{
-    use super::super::*;
+use super::{EPSILON, Point, Unit, Vector};
+use derive_more::{Display, Into, From};
 
-    #[test]
-    pub fn test_are_ccw()
+#[derive(Eq, PartialEq)]
+#[derive(Copy, Clone)]
+#[derive(From, Into)]
+#[derive(Debug, Default)]
+#[derive(Display)]
+#[display(fmt = "[{} ; {}]", start, stop)]
+pub struct Segment { pub start: Point, pub stop: Point }
+
+impl Segment {
+    pub fn contains(&self, point: &Point) -> bool
     {
-        let a = Point { x: 0., y: -1. };
-        let b = Point { x: 1., y: 0. };
-        let c = Point { x: 0., y: 1. };
+        let dist =
+            self.start.distance_from(point) +
+            self.stop.distance_from(point);
 
-        assert!(Point::are_ccw(&a, &b, &c));
-        assert!(Point::are_ccw(&b, &c, &a));
-        assert!(Point::are_ccw(&c, &a, &b));
+        (dist - self.length()).abs() < EPSILON
     }
 
-    #[test]
-    pub fn test_are_not_ccw()
+    pub fn distance_from(&self, rhs: &Self) -> Unit
     {
-        let a = Point { x: 0., y: -1. };
-        let b = Point { x: 1., y: 0. };
-        let c = Point { x: 0., y: 1. };
-
-        assert!(!Point::are_ccw(&c, &b, &a));
-        assert!(!Point::are_ccw(&a, &c, &b));
-        assert!(!Point::are_ccw(&b, &a, &c));
+        Vector::from(self).orthogonal().dot(&rhs.into()).abs()
     }
 
-    #[test]
-    pub fn test_distance_from()
+    pub fn is_horizontal(&self) -> bool
     {
-        assert_eq!(
-            Point { x: 0., y: -1. }.distance_from(&Point { x: 0., y: 1. }),
-            2.
-        );
+        (self.start.y - self.stop.y).abs() < EPSILON
     }
 
-    #[test]
-    pub fn test_eq_below_epsilon()
+    pub fn is_vertical(&self) -> bool
     {
-        assert_eq!(Point::default(), Point { x: 0., y: EPSILON / 10. });
+        (self.start.x - self.stop.x).abs() < EPSILON
     }
 
-    #[test]
-    pub fn test_eq_epsilon()
+    pub fn is_secant_with(&self, rhs: &Self) -> bool
     {
-        assert_ne!(Point::default(), Point { x: 0., y: EPSILON });
+        let (a, b) = (*self).into();
+        let (c, d) = (*rhs).into();
+
+        (Point::are_ccw(&a, &c, &d) != Point::are_ccw(&b, &c, &d)) &&
+            (Point::are_ccw(&a, &b, &c) != Point::are_ccw(&a, &b, &d))
     }
 
-    #[test]
-    pub fn test_eq_above_epsilon()
-    {
-        assert_ne!(Point::default(), Point { x: 0., y: EPSILON * 10. });
-    }
+    pub fn length(&self) -> Unit { self.start.distance_from(&self.stop) }
 }
 
-mod vector
+#[cfg(test)]
+mod tests
 {
-    use super::super::*;
-
-    #[test]
-    fn test_collinear_and_orthogonal()
-    {
-        let u = Vector { x: 1., y: 1.};
-        let v = Vector { x: 2., y: 2.};
-
-        assert_eq!(u.det(&v), 0.);
-        assert!(u.is_collinear_with(&v));
-        assert!(!u.is_orthogonal_to(&v));
-
-        assert_eq!(u.orthogonal().dot(&v), 0.);
-        assert!(!u.orthogonal().is_collinear_with(&v));
-        assert!(u.orthogonal().is_orthogonal_to(&v));
-    }
-
-    #[test]
-    fn test_eq_below_epsilon()
-    {
-        assert_eq!(
-            Vector { x: 0., y: 1. },
-            Vector { x: EPSILON / 10., y: 1. }
-        );
-    }
-
-    #[test]
-    fn test_eq_epsilon()
-    {
-        assert_ne!(
-            Vector { x: 0., y: 1. },
-            Vector { x: EPSILON, y: 1. }
-        );
-    }
-
-    #[test]
-    fn test_eq_above_epsilon()
-    {
-        assert_ne!(
-            Vector { x: 0., y: 1. },
-            Vector { x: EPSILON * 10., y: 1. }
-        );
-    }
-
-    #[test]
-    fn test_norm()
-    {
-        assert_eq!(Vector { x: 2., y: 0. }.norm(), 2.);
-    }
-
-    #[test]
-    fn test_unit()
-    {
-        let norm = (Vector { x: 4., y: 2. }.unit().unwrap().norm() - 1.).abs();
-
-        assert!(norm < EPSILON);
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_unit_zero() { Vector::default().unit().unwrap(); }
-}
-
-mod segment
-{
-    use super::super::*;
+    use super::*;
 
     #[test]
     fn test_is_secant_with_secant()
