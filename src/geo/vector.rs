@@ -40,7 +40,9 @@ impl Vector {
         self.dot(rhs).abs() < EPSILON
     }
 
-    pub fn norm(&self) -> Unit { (self.x.powi(2) + self.y.powi(2)).sqrt() }
+    pub fn squared_norm(&self) -> Unit { self.x.powi(2) + self.y.powi(2) }
+    pub fn norm(&self) -> Unit { self.squared_norm().sqrt() }
+
     pub fn orthogonal(&self) -> Self { Self { x: -self.y, y: self.x } }
 
     pub fn unit(self) -> Result<Self, ZeroNormError>
@@ -56,7 +58,8 @@ impl Vector {
 impl PartialEq for Vector {
     fn eq(&self, other: &Self) -> bool
     {
-        self.is_collinear_with(other) && ((*self - *other).norm() < EPSILON)
+        self.is_collinear_with(other) &&
+            ((*self - *other).squared_norm() < EPSILON)
     }
 }
 
