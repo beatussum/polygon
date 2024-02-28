@@ -1,4 +1,4 @@
-use super::{EPSILON, Unit, Vector};
+use super::{EPSILON, Unit};
 use derive_more::{Display, Into, From};
 
 #[derive(Copy, Clone)]
@@ -9,11 +9,6 @@ use derive_more::{Display, Into, From};
 pub struct Point { pub x: Unit, pub y: Unit }
 
 impl Point {
-    pub fn are_ccw(a: &Self, b: &Self, c: &Self) -> bool
-    {
-        Vector::from((a, b)).det(&(a, c).into()) > 0.
-    }
-
     pub fn distance_from(&self, rhs: &Self) -> Unit
     {
         ((self.x - rhs.x).powi(2) + (self.y - rhs.y).powi(2)).sqrt()
@@ -30,30 +25,6 @@ impl Eq for Point {}
 mod tests
 {
     use super::*;
-
-    #[test]
-    pub fn test_are_ccw()
-    {
-        let a = Point { x: 0., y: -1. };
-        let b = Point { x: 1., y: 0. };
-        let c = Point { x: 0., y: 1. };
-
-        assert!(Point::are_ccw(&a, &b, &c));
-        assert!(Point::are_ccw(&b, &c, &a));
-        assert!(Point::are_ccw(&c, &a, &b));
-    }
-
-    #[test]
-    pub fn test_are_not_ccw()
-    {
-        let a = Point { x: 0., y: -1. };
-        let b = Point { x: 1., y: 0. };
-        let c = Point { x: 0., y: 1. };
-
-        assert!(!Point::are_ccw(&c, &b, &a));
-        assert!(!Point::are_ccw(&a, &c, &b));
-        assert!(!Point::are_ccw(&b, &a, &c));
-    }
 
     #[test]
     pub fn test_distance_from()
