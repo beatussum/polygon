@@ -8,7 +8,9 @@ use std::ops::{Mul, MulAssign};
 use std::ops::{Div, DivAssign};
 
 const EPSILON: f32 = 1e-5;
-type Unit = f32;
+pub type Unit = f32;
+
+mod tests;
 
 #[derive(Copy, Clone)]
 #[derive(From, Into)]
@@ -25,7 +27,7 @@ impl Point {
 
     pub fn distance_from(&self, rhs: &Self) -> Unit
     {
-        ((self.x - rhs.x).powf(2.) + (self.y - rhs.y).powf(2.)).sqrt()
+        ((self.x - rhs.x).powi(2) + (self.y - rhs.y).powi(2)).sqrt()
     }
 }
 
@@ -62,9 +64,17 @@ impl Vector {
         self.dot(rhs).abs() < EPSILON
     }
 
-    pub fn norm(&self) -> Unit { (self.x.powf(2.) + self.y.powf(2.)).sqrt() }
+    pub fn norm(&self) -> Unit { (self.x.powi(2) + self.y.powi(2)).sqrt() }
     pub fn orthogonal(&self) -> Self { Self { x: -self.y, y: self.x } }
-    pub fn unit(self) -> Self { self / self.norm() }
+
+    pub fn unit(self) -> Result<Self, &'static str>
+    {
+        if self.norm() == 0. {
+            Err("attempt to divide by zero")
+        } else {
+            Ok(self / self.norm())
+        }
+    }
 }
 
 impl PartialEq for Vector {
