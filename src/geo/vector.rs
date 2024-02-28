@@ -172,9 +172,9 @@ mod tests
     #[test]
     fn test_unit()
     {
-        let norm = (Vector { x: 4., y: 2. }.unit().unwrap().norm() - 1.).abs();
+        let diff = (Vector { x: 4., y: 2. }.unit().unwrap().norm() - 1.).abs();
 
-        assert!(norm < EPSILON);
+        assert!(diff < EPSILON);
     }
 
     #[test]
