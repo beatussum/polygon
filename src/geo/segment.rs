@@ -1,10 +1,9 @@
 use super::{are_ccw, EPSILON, Point, Unit, Vector};
-use derive_more::{Display, Into, From};
+use derive_more::{Display, Into};
 
 #[derive(Eq, PartialEq)]
 #[derive(Copy, Clone)]
-#[derive(From, Into)]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Into)]
 #[derive(Display)]
 #[display(fmt = "[{} ; {}]", start, stop)]
 pub struct Segment { start: Point, stop: Point }
