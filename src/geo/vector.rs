@@ -1,4 +1,4 @@
-use super::{EPSILON, Point, Unit, Segment};
+use super::{EPSILON, Point, Unit};
 
 use derive_more::{Add, AddAssign};
 use derive_more::{Sub, SubAssign};
@@ -105,15 +105,11 @@ impl DivAssign<Unit> for Vector {
     }
 }
 
-impl From<(&Point, &Point)> for Vector {
-    fn from((a, b): (&Point, &Point)) -> Self
+impl From<(Point, Point)> for Vector {
+    fn from((a, b): (Point, Point)) -> Self
     {
         Self { x: (b.x - a.x), y: (b.y - a.y) }
     }
-}
-
-impl From<&Segment> for Vector {
-    fn from(value: &Segment) -> Self { (&value.start, &value.stop).into() }
 }
 
 #[cfg(test)]

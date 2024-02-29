@@ -44,6 +44,11 @@ impl Segment {
     }
 
     pub fn length(&self) -> Unit { self.start.distance_from(&self.stop) }
+
+    pub fn unit(&self) -> Vector
+    {
+        Vector::from((self.start, self.stop)).unit().unwrap()
+    }
 }
 
 #[cfg(test)]

@@ -10,7 +10,7 @@ pub use segment::Segment;
 const EPSILON: f32 = 1e-5;
 pub type Unit = f32;
 
-fn are_ccw(a: &Point, b: &Point, c: &Point) -> bool
+fn are_ccw(&a: &Point, &b: &Point, &c: &Point) -> bool
 {
     Vector::from((a, b)).det(&(a, c).into()) > 0.
 }
