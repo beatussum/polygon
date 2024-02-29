@@ -66,15 +66,30 @@ impl Polygon {
     pub fn pairs_of_points(&self)
         -> impl Clone + Iterator<Item = (&Point, &Point)>
     {
-        self.points.iter().zip(self.points.iter().skip(1))
+        self
+            .points()
+            .zip(self.points.iter().skip(1))
+            .chain(
+                [(self.points.last().unwrap(), self.points.first().unwrap())]
+                .into_iter()
+            )
     }
 
     pub fn pairs_of_segments(&self)
         -> impl Clone + Iterator<Item = (Segment, Segment)> + '_
     {
-        let iter = self.pairs_of_points().map(|(&x, &y)| Segment::new(x, y));
+        self.segments().zip(self.segments().skip(1))
+    }
 
-        iter.clone().zip(iter.skip(1))
+
+    pub fn points(&self) -> impl Clone + Iterator<Item = &Point>
+    {
+        self.points.iter()
+    }
+
+    pub fn segments(&self) -> impl Clone + Iterator<Item = Segment> + '_
+    {
+        self.pairs_of_points().map(|(&x, &y)| Segment::new(x, y))
     }
 
     pub fn revert(&mut self) { self.points.reverse(); }
