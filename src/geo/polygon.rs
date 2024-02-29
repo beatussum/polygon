@@ -12,12 +12,12 @@ impl Polygon {
         let (a, b) = bottom_left.into();
 
         Self {
-            points: [
+            points: vec![
                 bottom_left,
                 Point { x: a + side, y: b },
                 Point { x: a + side, y: b + side },
                 Point { x: a, y: b + side }
-            ].into()
+            ]
         }
     }
 
@@ -96,7 +96,7 @@ mod tests
     {
         assert!(
             !Polygon {
-                points: [Point::default(), Point::default()].into()
+                points: vec![Point::default(), Point::default()]
             }.is_valid()
         );
     }
@@ -104,7 +104,7 @@ mod tests
     #[test]
     fn test_is_not_valid_not_enough()
     {
-        assert!(!Polygon { points: [Point::default()].into() }.is_valid());
+        assert!(!Polygon { points: vec![Point::default()] }.is_valid());
     }
 
     #[test]
@@ -118,11 +118,11 @@ mod tests
     {
         assert!(
             Polygon {
-                points: [
+                points: vec![
                     Point { x: -1., y: 0. },
                     Point { x: 0., y: 1. },
                     Point { x: 1., y: 0. }
-                ].into()
+                ]
             }.is_clockwise()
         );
     }
