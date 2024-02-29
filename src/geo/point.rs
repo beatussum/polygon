@@ -1,4 +1,4 @@
-use super::{EPSILON, Unit};
+use super::{EPSILON, Unit, Vector};
 use derive_more::{Display, Into, From};
 
 #[derive(Copy, Clone)]
@@ -20,6 +20,10 @@ impl PartialEq for Point {
 }
 
 impl Eq for Point {}
+
+impl From<Vector> for Point {
+    fn from(value: Vector) -> Self { Self { x: value.x, y: value.y } }
+}
 
 #[cfg(test)]
 mod tests
