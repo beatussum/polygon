@@ -7,9 +7,16 @@ use derive_more::{Display, Into, From};
 #[derive(Debug, Default)]
 #[derive(Display)]
 #[display(fmt = "[{} ; {}]", start, stop)]
-pub struct Segment { pub start: Point, pub stop: Point }
+pub struct Segment { start: Point, stop: Point }
 
 impl Segment {
+    pub fn new(start: Point, stop: Point) -> Self
+    {
+        assert_ne!(start, stop);
+
+        Self { start, stop }
+    }
+
     pub fn contains(&self, point: &Point) -> bool
     {
         let dist =
@@ -60,10 +67,10 @@ mod tests
     fn test_contains()
     {
         assert!(
-            Segment {
-                start: Point { x: -1., y: -1. },
-                stop: Point { x: 1., y: 1. }
-            }.contains(&Point::default())
+            Segment::new(
+                Point { x: -1., y: -1. },
+                Point { x: 1., y: 1. }
+            ).contains(&Point::default())
         );
     }
 
@@ -71,10 +78,10 @@ mod tests
     fn test_not_contains()
     {
         assert!(
-            !Segment {
-                start: Point { x: -1., y: -1. },
-                stop: Point { x: 1., y: 1. }
-            }.contains(&Point { x: 2., y: 2. })
+            !Segment::new(
+                Point { x: -1., y: -1. },
+                Point { x: 1., y: 1. }
+            ).contains(&Point { x: 2., y: 2. })
         );
     }
 
@@ -82,10 +89,10 @@ mod tests
     fn test_is_vertical()
     {
         assert!(
-            Segment {
-                start: Point { x: -EPSILON / 10., y: -1. },
-                stop: Point { x: EPSILON / 10., y: 1. }
-            }.is_vertical()
+            Segment::new(
+                Point { x: -EPSILON / 10., y: -1. },
+                Point { x: EPSILON / 10., y: 1. }
+            ).is_vertical()
         );
     }
 
@@ -93,10 +100,10 @@ mod tests
     fn test_is_not_vertical()
     {
         assert!(
-            !Segment {
-                start: Point { x: -1., y: -1. },
-                stop: Point { x: 1., y: 1. }
-            }.is_vertical()
+            !Segment::new(
+                Point { x: -1., y: -1. },
+                Point { x: 1., y: 1. }
+            ).is_vertical()
         );
     }
 
@@ -104,10 +111,10 @@ mod tests
     fn test_is_horizontal()
     {
         assert!(
-            Segment {
-                start: Point { x: -1., y: -EPSILON / 10. },
-                stop: Point { x: 1., y: EPSILON / 10. }
-            }.is_horizontal()
+            Segment::new(
+                Point { x: -1., y: -EPSILON / 10. },
+                Point { x: 1., y: EPSILON / 10. }
+            ).is_horizontal()
         );
     }
 
@@ -115,10 +122,10 @@ mod tests
     fn test_is_not_horizontal()
     {
         assert!(
-            !Segment {
-                start: Point { x: -1., y: -1. },
-                stop: Point { x: 1., y: 1. }
-            }.is_horizontal()
+            !Segment::new(
+                Point { x: -1., y: -1. },
+                Point { x: 1., y: 1. }
+            ).is_horizontal()
         );
     }
 
@@ -126,14 +133,14 @@ mod tests
     fn test_is_secant_with_non_secant()
     {
         assert!(
-            !Segment {
-                start: Point { x: -1., y: -1. },
-                stop: Point { x: 1., y: 1. }
-            }.is_secant_with(
-                &Segment {
-                    start: Point { x: -1., y: -3. },
-                    stop: Point { x: -1., y: -1. }
-                }
+            !Segment::new(
+                Point { x: -1., y: -1. },
+                Point { x: 1., y: 1. }
+            ).is_secant_with(
+                &Segment::new(
+                    Point { x: -1., y: -3. },
+                    Point { x: -1., y: -1. }
+                )
             )
         );
     }
@@ -142,14 +149,14 @@ mod tests
     fn test_is_secant_with_secant()
     {
         assert!(
-            Segment {
-                start: Point { x: -1., y: -1. },
-                stop: Point { x: 1., y: 1. }
-            }.is_secant_with(
-                &Segment {
-                    start: Point { x: 1., y: -1. },
-                    stop: Point { x: -1., y: 1. }
-                }
+            Segment::new(
+                Point { x: -1., y: -1. },
+                Point { x: 1., y: 1. }
+            ).is_secant_with(
+                &Segment::new(
+                    Point { x: 1., y: -1. },
+                    Point { x: -1., y: 1. }
+                )
             )
         );
     }
@@ -158,14 +165,14 @@ mod tests
     fn test_is_secant_with_self()
     {
         assert!(
-            !Segment {
-                start: Point { x: -1., y: -1. },
-                stop: Point { x: 1., y: 1. }
-            }.is_secant_with(
-                &Segment {
-                    start: Point { x: -1., y: -1. },
-                    stop: Point { x: 1., y: 1. }
-                }
+            Segment::new(
+                Point { x: -1., y: -1. },
+                Point { x: 1., y: 1. }
+            ).is_secant_with(
+                &Segment::new(
+                    Point { x: -1., y: -1. },
+                    Point { x: 1., y: 1. }
+                )
             )
         );
     }
@@ -174,10 +181,10 @@ mod tests
     fn test_length()
     {
         assert_eq!(
-            Segment {
-                start: Point { x: -2., y: -1. },
-                stop: Point { x: 2., y: 2. }
-            }.length(),
+            Segment::new(
+                Point { x: -2., y: -1. },
+                Point { x: 2., y: 2. }
+            ).length(),
             5.
         );
     }
