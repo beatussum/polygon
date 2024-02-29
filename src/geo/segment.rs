@@ -82,17 +82,18 @@ impl Segment {
         (self.start.x - self.stop.x).abs() < EPSILON
     }
 
+    pub fn is_strictly_secant_with(&self, rhs: &Self) -> bool
+    {
+        let (a, b) = (*self).into();
+        let (c, d) = (*rhs).into();
+
+        (are_ccw(&a, &c, &d) != are_ccw(&b, &c, &d)) &&
+            (are_ccw(&a, &b, &c) != are_ccw(&a, &b, &d))
+    }
+
     pub fn is_secant_with(&self, rhs: &Self) -> bool
     {
-        if self == rhs {
-            true
-        } else {
-            let (a, b) = (*self).into();
-            let (c, d) = (*rhs).into();
-
-            (are_ccw(&a, &c, &d) != are_ccw(&b, &c, &d)) &&
-                (are_ccw(&a, &b, &c) != are_ccw(&a, &b, &d))
-        }
+        (self == rhs) || self.is_strictly_secant_with(rhs)
     }
 
     pub fn length(&self) -> Unit { self.start.distance_from(&self.stop) }
@@ -286,17 +287,10 @@ mod tests
     #[test]
     fn test_is_secant_with_self()
     {
-        assert!(
-            Segment::new(
-                Point { x: -1., y: -1. },
-                Point { x: 1., y: 1. }
-            ).is_secant_with(
-                &Segment::new(
-                    Point { x: -1., y: -1. },
-                    Point { x: 1., y: 1. }
-                )
-            )
-        );
+        let u = Segment::new(Point { x: -1., y: -1. },Point { x: 1., y: 1. });
+
+        assert!(u.is_secant_with(&u));
+        assert!(!u.is_strictly_secant_with(&u));
     }
 
     #[test]
