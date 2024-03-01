@@ -1,4 +1,4 @@
-use super::{are_ccw, EPSILON, Point, Unit, Vector};
+use super::{are_ccw, Distance, EPSILON, Point, Unit, Vector};
 use derive_more::{Display, Into};
 
 #[derive(Eq, PartialEq)]
@@ -23,52 +23,6 @@ impl Segment {
             self.stop.distance_from(point);
 
         (dist - self.length()).abs() < EPSILON
-    }
-
-    pub fn distance_from_point(&self, other: &Point) -> Unit
-    {
-        if self.contains(other) {
-            0.
-        } else {
-            let projection =
-                Vector::from((self.start, *other))
-                .dot(&(*self).into());
-
-            let oh =
-                Vector::from((Point::default(), self.start)) +
-                (projection / Vector::from(*self).squared_norm()) *
-                Vector::from(*self);
-
-            if self.contains(&oh.into()) {
-                (oh - (*other).into()).norm()
-            } else if projection < 0. {
-                self.start.distance_from(other)
-            } else {
-                self.stop.distance_from(other)
-            }
-        }
-    }
-
-    pub fn distance_from_segment(&self, other: &Self) -> Unit
-    {
-        fn dist(a: &Segment, b: &Segment) -> Unit
-        {
-            std::cmp::min_by(
-                a.distance_from_point(&b.start),
-                a.distance_from_point(&b.stop),
-                Unit::total_cmp
-            )
-        }
-
-        if self.is_secant_with(other) {
-            0.
-        } else {
-            std::cmp::min_by(
-                dist(self, other),
-                dist(other, self),
-                Unit::total_cmp
-            )
-        }
     }
 
     pub fn is_horizontal(&self) -> bool
@@ -96,6 +50,58 @@ impl Segment {
     }
 
     pub fn length(&self) -> Unit { self.start.distance_from(&self.stop) }
+}
+
+impl Distance for Segment {
+    fn distance_from(&self, other: &Self) -> Unit
+    {
+        fn dist(a: &Segment, b: &Segment) -> Unit
+        {
+            std::cmp::min_by(
+                a.distance_from(&b.start),
+                a.distance_from(&b.stop),
+                Unit::total_cmp
+            )
+        }
+
+        if self.is_secant_with(other) {
+            0.
+        } else {
+            std::cmp::min_by(
+                dist(self, other),
+                dist(other, self),
+                Unit::total_cmp
+            )
+        }
+    }
+}
+
+impl Distance<Point> for Segment {
+    fn distance_from(&self, other: &Point) -> Unit
+    {
+        let (start, stop) = (*self).into();
+
+        if self.contains(other) {
+            0.
+        } else {
+            let projection =
+                Vector::from((start, *other))
+                .dot(&(*self).into());
+
+            let oh =
+                Vector::from((Point::default(), start)) +
+                (projection / Vector::from(*self).squared_norm()) *
+                Vector::from(*self);
+
+            if self.contains(&oh.into()) {
+                (oh - (*other).into()).norm()
+            } else if projection < 0. {
+                start.distance_from(other)
+            } else {
+                stop.distance_from(other)
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -132,7 +138,7 @@ mod tests
             Segment::new(
                 Point { x: -1., y: -1. },
                 Point { x: 1., y: 1. }
-            ).distance_from_point(&Point::default()),
+            ).distance_from(&Point::default()),
             0.
         );
     }
@@ -144,7 +150,7 @@ mod tests
             Segment::new(
                 Point { x: -1., y: -1. },
                 Point { x: 1., y: 1. }
-            ).distance_from_point(&Point { x: -1., y: 1. }),
+            ).distance_from(&Point { x: -1., y: 1. }),
             2_f32.sqrt()
         );
     }
@@ -156,7 +162,7 @@ mod tests
             Segment::new(
                 Point::default(),
                 Point { x: 1., y: 1. }
-            ).distance_from_point(&Point { x: -1., y: 0. }),
+            ).distance_from(&Point { x: -1., y: 0. }),
             1.
         );
     }
@@ -168,7 +174,7 @@ mod tests
             Segment::new(
                 Point::default(),
                 Point { x: 1., y: 1. }
-            ).distance_from_segment(
+            ).distance_from(
                 &Segment::new(
                     Point { x: 4., y: 5. },
                     Point { x: 3., y: 7. }
@@ -185,7 +191,7 @@ mod tests
             Segment::new(
                 Point { x: -1., y: -1. },
                 Point { x: 1., y: 1. }
-            ).distance_from_segment(
+            ).distance_from(
                 &Segment::new(
                     Point { x: -1., y: 1. },
                     Point { x: 1., y: -1. }
@@ -204,7 +210,7 @@ mod tests
                 Point { x: 1., y: 1. }
             );
 
-        assert_eq!(u.distance_from_segment(&u), 0.);
+        assert_eq!(u.distance_from(&u), 0.);
     }
 
     #[test]

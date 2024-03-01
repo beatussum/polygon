@@ -13,6 +13,8 @@ pub use vector::Vector;
 const EPSILON: f32 = 1e-5;
 pub type Unit = f32;
 
+trait Distance<Rhs = Self> { fn distance_from(&self, other: &Rhs) -> Unit; }
+
 fn are_ccw(&a: &Point, &b: &Point, &c: &Point) -> bool
 {
     Vector::from((a, b)).det(&(a, c).into()) > 0.

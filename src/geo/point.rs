@@ -1,4 +1,4 @@
-use super::{EPSILON, Unit, Vector};
+use super::{Distance, EPSILON, Segment, Unit, Vector};
 use derive_more::{Display, Into, From};
 
 #[derive(Copy, Clone)]
@@ -8,10 +8,16 @@ use derive_more::{Display, Into, From};
 #[display(fmt = "({} ; {})", x, y)]
 pub struct Point { pub x: Unit, pub y: Unit }
 
-impl Point {
-    pub fn distance_from(&self, rhs: &Self) -> Unit
+impl Distance for Point {
+    fn distance_from(&self, other: &Self) -> Unit {
+        ((self.x - other.x).powi(2) + (self.y - other.y).powi(2)).sqrt()
+    }
+}
+
+impl Distance<Segment> for Point {
+    fn distance_from(&self, other: &Segment) -> Unit
     {
-        ((self.x - rhs.x).powi(2) + (self.y - rhs.y).powi(2)).sqrt()
+        other.distance_from(self)
     }
 }
 
