@@ -1,4 +1,7 @@
-use super::{are_ccw, Distance, EPSILON, Point, Unit, Vector};
+use super::{Distance, Point, Unit, Vector};
+use super::are_ccw;
+use super::EPSILON;
+
 use derive_more::{Display, Into};
 
 #[derive(Eq, PartialEq)]

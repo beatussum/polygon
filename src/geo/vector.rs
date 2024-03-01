@@ -1,4 +1,5 @@
-use super::{EPSILON, Point, Segment, Unit};
+use super::{Point, Segment, Unit};
+use super::EPSILON;
 
 use derive_more::{Add, AddAssign};
 use derive_more::{Sub, SubAssign};

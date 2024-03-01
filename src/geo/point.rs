@@ -1,4 +1,6 @@
-use super::{Distance, EPSILON, Segment, Unit, Vector};
+use super::{Distance, Segment, Unit, Vector};
+use super::EPSILON;
+
 use derive_more::{Display, Into, From};
 
 #[derive(Copy, Clone)]
