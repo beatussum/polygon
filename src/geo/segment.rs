@@ -29,16 +29,6 @@ impl Segment {
         (dist - self.length()).abs() < EPSILON
     }
 
-    pub fn is_horizontal(&self) -> bool
-    {
-        (self.start.y - self.stop.y).abs() < EPSILON
-    }
-
-    pub fn is_vertical(&self) -> bool
-    {
-        (self.start.x - self.stop.x).abs() < EPSILON
-    }
-
     pub fn is_strictly_secant_with(&self, rhs: &Self) -> bool
     {
         let (a, b) = (*self).into();
@@ -216,50 +206,6 @@ mod tests
             );
 
         assert_eq!(u.distance_from(&u), 0.);
-    }
-
-    #[test]
-    fn test_is_vertical()
-    {
-        assert!(
-            Segment::new(
-                Point { x: -EPSILON / 10., y: -1. },
-                Point { x: EPSILON / 10., y: 1. }
-            ).is_vertical()
-        );
-    }
-
-    #[test]
-    fn test_is_not_vertical()
-    {
-        assert!(
-            !Segment::new(
-                Point { x: -1., y: -1. },
-                Point { x: 1., y: 1. }
-            ).is_vertical()
-        );
-    }
-
-    #[test]
-    fn test_is_horizontal()
-    {
-        assert!(
-            Segment::new(
-                Point { x: -1., y: -EPSILON / 10. },
-                Point { x: 1., y: EPSILON / 10. }
-            ).is_horizontal()
-        );
-    }
-
-    #[test]
-    fn test_is_not_horizontal()
-    {
-        assert!(
-            !Segment::new(
-                Point { x: -1., y: -1. },
-                Point { x: 1., y: 1. }
-            ).is_horizontal()
-        );
     }
 
     #[test]

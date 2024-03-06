@@ -41,6 +41,9 @@ impl Vector {
         self.dot(rhs).abs() < EPSILON
     }
 
+    pub fn is_horizontal(&self) -> bool { self.y.abs() < EPSILON }
+    pub fn is_vertical(&self) -> bool { self.x.abs() < EPSILON }
+
     pub fn squared_norm(&self) -> Unit { self.x.powi(2) + self.y.powi(2) }
     pub fn norm(&self) -> Unit { self.squared_norm().sqrt() }
 
@@ -142,6 +145,48 @@ mod tests
     }
 
     #[test]
+    fn test_is_vertical()
+    {
+        assert!(Vector { x: 0., y: 1. }.is_vertical());
+    }
+
+    #[test]
+    fn test_is_not_vertical()
+    {
+        assert!(!Vector { x: 1., y: 1. }.is_vertical());
+    }
+
+    #[test]
+    fn test_is_horizontal()
+    {
+        assert!(Vector { x: 1., y: 0. }.is_horizontal());
+    }
+
+    #[test]
+    fn test_is_not_horizontal()
+    {
+        assert!(!Vector { x: 1., y: 1. }.is_horizontal());
+    }
+
+    #[test]
+    fn test_norm()
+    {
+        assert_eq!(Vector { x: 2., y: 0. }.norm(), 2.);
+    }
+
+    #[test]
+    fn test_unit()
+    {
+        let diff = (Vector { x: 4., y: 2. }.unit().unwrap().norm() - 1.).abs();
+
+        assert!(diff < EPSILON);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_unit_zero() { Vector::default().unit().unwrap(); }
+
+    #[test]
     fn test_eq_below_epsilon()
     {
         assert_eq!(
@@ -167,22 +212,4 @@ mod tests
             Vector { x: EPSILON * 10., y: 1. }
         );
     }
-
-    #[test]
-    fn test_norm()
-    {
-        assert_eq!(Vector { x: 2., y: 0. }.norm(), 2.);
-    }
-
-    #[test]
-    fn test_unit()
-    {
-        let diff = (Vector { x: 4., y: 2. }.unit().unwrap().norm() - 1.).abs();
-
-        assert!(diff < EPSILON);
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_unit_zero() { Vector::default().unit().unwrap(); }
 }
