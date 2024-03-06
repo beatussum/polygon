@@ -1,7 +1,7 @@
 use super::{Point, Segment, Unit, Vector};
 
-#[derive(Clone)]
-#[derive(Debug, Default)]
+#[derive(PartialEq, Eq)]
+#[derive(Clone, Debug, Default)]
 pub struct Polygon { pub points: Vec<Point> }
 
 impl Polygon {
