@@ -3,6 +3,7 @@ use super::are_ccw;
 use super::EPSILON;
 
 use derive_more::{Display, Into};
+use symm_impl::symmetric;
 
 #[derive(Eq, PartialEq)]
 #[derive(Copy, Clone)]
@@ -79,6 +80,7 @@ impl Distance for Segment {
     }
 }
 
+#[symmetric]
 impl Distance<Point> for Segment {
     fn distance_from(&self, other: &Point) -> Unit
     {
