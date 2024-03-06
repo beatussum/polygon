@@ -5,6 +5,8 @@ use derive_more::{Add, AddAssign};
 use derive_more::{Sub, SubAssign};
 use derive_more::{Display, Into, From, Neg, Sum};
 
+use symm_impl::symmetric;
+
 use std::ops::{Mul, MulAssign};
 use std::ops::{Div, DivAssign};
 
@@ -69,6 +71,7 @@ impl PartialEq for Vector {
 
 impl Eq for Vector {}
 
+#[symmetric]
 impl Mul<Unit> for Vector {
     type Output = Vector;
 
@@ -76,12 +79,6 @@ impl Mul<Unit> for Vector {
     {
         Self { x: self.x * rhs, y: self.y * rhs }
     }
-}
-
-impl Mul<Vector> for Unit {
-    type Output = Vector;
-
-    fn mul(self, rhs: Vector) -> Self::Output { rhs * self }
 }
 
 impl MulAssign<Unit> for Vector {
