@@ -1,4 +1,5 @@
-use super::{Distance, SVG, Unit, Vector};
+use super::{Distance, SVG};
+use super::{Unit, Vector};
 use super::EPSILON;
 
 use derive_more::{Display, Into, From};

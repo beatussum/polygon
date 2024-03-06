@@ -1,4 +1,5 @@
-use super::{Distance, Point, SVG, Unit};
+use super::{Distance, SVG};
+use super::{Point, Unit};
 use super::are_ccw;
 use super::EPSILON;
 
