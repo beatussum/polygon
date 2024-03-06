@@ -13,14 +13,14 @@ pub use vector::Vector;
 const EPSILON: f32 = 1e-5;
 pub type Unit = f32;
 
-trait Distance<Rhs = Self>
+trait Distance<Other = Self>
 {
-    fn distance_from(&self, other: &Rhs) -> Unit
+    fn distance_from(&self, other: &Other) -> Unit
     {
         self.squared_distance_from(other).sqrt()
     }
 
-    fn squared_distance_from(&self, other: &Rhs) -> Unit;
+    fn squared_distance_from(&self, other: &Other) -> Unit;
 }
 
 fn are_ccw(&a: &Point, &b: &Point, &c: &Point) -> bool
