@@ -57,13 +57,13 @@ impl Segment {
 }
 
 impl Distance for Segment {
-    fn distance_from(&self, other: &Self) -> Unit
+    fn squared_distance_from(&self, other: &Self) -> Unit
     {
         fn dist(a: &Segment, b: &Segment) -> Unit
         {
             std::cmp::min_by(
-                a.distance_from(&b.start),
-                a.distance_from(&b.stop),
+                a.squared_distance_from(&b.start),
+                a.squared_distance_from(&b.stop),
                 Unit::total_cmp
             )
         }
@@ -82,7 +82,7 @@ impl Distance for Segment {
 
 #[symmetric]
 impl Distance<Point> for Segment {
-    fn distance_from(&self, other: &Point) -> Unit
+    fn squared_distance_from(&self, other: &Point) -> Unit
     {
         let (start, stop) = (*self).into();
 
@@ -99,11 +99,11 @@ impl Distance<Point> for Segment {
                 Vector::from(*self);
 
             if self.contains(&oh.into()) {
-                (oh - (*other).into()).norm()
+                (oh - (*other).into()).squared_norm()
             } else if projection < 0. {
-                start.distance_from(other)
+                start.squared_distance_from(other)
             } else {
-                stop.distance_from(other)
+                stop.squared_distance_from(other)
             }
         }
     }

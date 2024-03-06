@@ -11,8 +11,8 @@ use derive_more::{Display, Into, From};
 pub struct Point { pub x: Unit, pub y: Unit }
 
 impl Distance for Point {
-    fn distance_from(&self, other: &Self) -> Unit {
-        ((self.x - other.x).powi(2) + (self.y - other.y).powi(2)).sqrt()
+    fn squared_distance_from(&self, other: &Self) -> Unit {
+        (self.x - other.x).powi(2) + (self.y - other.y).powi(2)
     }
 }
 
