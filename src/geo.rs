@@ -15,6 +15,8 @@ use symm_impl::symmetric;
 const EPSILON: f32 = 1e-5;
 pub type Unit = f32;
 
+trait Container<Other = Self> { fn contains(&self, other: &Other) -> bool; }
+
 trait Distance<Other = Self>
 {
     fn distance_from(&self, other: &Other) -> Unit
@@ -50,7 +52,7 @@ impl Distance<Point> for Segment {
                 (projection / Vector::from(*self).squared_norm()) *
                 Vector::from(*self);
 
-            if self.contains(&oh.into()) {
+            if self.contains(&Point::from(oh)) {
                 (oh - (*other).into()).squared_norm()
             } else if projection < 0. {
                 start.squared_distance_from(other)

@@ -1,4 +1,4 @@
-use super::{Distance, SVG};
+use super::{Container, Distance, SVG};
 use super::{Point, Unit};
 use super::are_ccw;
 use super::EPSILON;
@@ -20,15 +20,6 @@ impl Segment {
         Self { start, stop }
     }
 
-    pub fn contains(&self, point: &Point) -> bool
-    {
-        let dist =
-            self.start.distance_from(point) +
-            self.stop.distance_from(point);
-
-        (dist - self.length()).abs() < EPSILON
-    }
-
     pub fn is_strictly_secant_with(&self, rhs: &Self) -> bool
     {
         let (a, b) = (*self).into();
@@ -44,6 +35,21 @@ impl Segment {
     }
 
     pub fn length(&self) -> Unit { self.start.distance_from(&self.stop) }
+}
+
+impl Container for Segment {
+    fn contains(&self, other: &Self) -> bool { self == other }
+}
+
+impl Container<Point> for Segment {
+    fn contains(&self, point: &Point) -> bool
+    {
+        let dist =
+            self.start.distance_from(point) +
+            self.stop.distance_from(point);
+
+        (dist - self.length()).abs() < EPSILON
+    }
 }
 
 impl Distance for Segment {
