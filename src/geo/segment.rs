@@ -1,9 +1,8 @@
-use super::{Distance, Point, Unit, Vector};
+use super::{Distance, Point, Unit};
 use super::are_ccw;
 use super::EPSILON;
 
 use derive_more::{Display, Into};
-use symm_impl::symmetric;
 
 #[derive(Eq, PartialEq)]
 #[derive(Copy, Clone)]
@@ -66,35 +65,6 @@ impl Distance for Segment {
                 dist(other, self),
                 Unit::total_cmp
             )
-        }
-    }
-}
-
-#[symmetric]
-impl Distance<Point> for Segment {
-    fn squared_distance_from(&self, other: &Point) -> Unit
-    {
-        let (start, stop) = (*self).into();
-
-        if self.contains(other) {
-            0.
-        } else {
-            let projection =
-                Vector::from((start, *other))
-                .dot(&(*self).into());
-
-            let oh =
-                Vector::from((Point::default(), start)) +
-                (projection / Vector::from(*self).squared_norm()) *
-                Vector::from(*self);
-
-            if self.contains(&oh.into()) {
-                (oh - (*other).into()).squared_norm()
-            } else if projection < 0. {
-                start.squared_distance_from(other)
-            } else {
-                stop.squared_distance_from(other)
-            }
         }
     }
 }

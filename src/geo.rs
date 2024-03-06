@@ -10,6 +10,8 @@ pub use segment::Segment;
 mod vector;
 pub use vector::Vector;
 
+use symm_impl::symmetric;
+
 const EPSILON: f32 = 1e-5;
 pub type Unit = f32;
 
@@ -26,6 +28,35 @@ trait Distance<Other = Self>
 fn are_ccw(&a: &Point, &b: &Point, &c: &Point) -> bool
 {
     Vector::from((a, b)).det(&(a, c).into()) > 0.
+}
+
+#[symmetric]
+impl Distance<Point> for Segment {
+    fn squared_distance_from(&self, other: &Point) -> Unit
+    {
+        let (start, stop) = (*self).into();
+
+        if self.contains(other) {
+            0.
+        } else {
+            let projection =
+                Vector::from((start, *other))
+                .dot(&(*self).into());
+
+            let oh =
+                Vector::from((Point::default(), start)) +
+                (projection / Vector::from(*self).squared_norm()) *
+                Vector::from(*self);
+
+            if self.contains(&oh.into()) {
+                (oh - (*other).into()).squared_norm()
+            } else if projection < 0. {
+                start.squared_distance_from(other)
+            } else {
+                stop.squared_distance_from(other)
+            }
+        }
+    }
 }
 
 #[cfg(test)]
