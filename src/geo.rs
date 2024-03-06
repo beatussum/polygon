@@ -25,6 +25,8 @@ trait Distance<Other = Self>
     fn squared_distance_from(&self, other: &Other) -> Unit;
 }
 
+trait SVG { fn to_svg(&self) -> String; }
+
 fn are_ccw(&a: &Point, &b: &Point, &c: &Point) -> bool
 {
     Vector::from((a, b)).det(&(a, c).into()) > 0.

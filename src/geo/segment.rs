@@ -1,4 +1,4 @@
-use super::{Distance, Point, Unit};
+use super::{Distance, Point, SVG, Unit};
 use super::are_ccw;
 use super::EPSILON;
 
@@ -66,6 +66,19 @@ impl Distance for Segment {
                 Unit::total_cmp
             )
         }
+    }
+}
+
+impl SVG for Segment {
+    fn to_svg(&self) -> String
+    {
+        format!(
+            r#"<line x1="{}" y1="{}" x2="{}" y2="{}""#,
+            self.start.x,
+            self.start.y,
+            self.stop.x,
+            self.stop.y
+        )
     }
 }
 

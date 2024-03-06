@@ -1,4 +1,4 @@
-use super::{Point, Segment, Unit, Vector};
+use super::{Point, Segment, SVG, Unit, Vector};
 
 #[derive(PartialEq, Eq)]
 #[derive(Clone, Debug, Default)]
@@ -95,6 +95,21 @@ impl Polygon {
     pub fn revert(&mut self) { self.points.reverse(); }
 }
 
+impl SVG for Polygon {
+    fn to_svg(&self) -> String
+    {
+        let mut points =
+            self
+                .points()
+                .map(|p| format!("{},{}", p.x, p.y))
+                .fold(String::new(), |x, y| x + &y + " ");
+
+        points.pop();
+
+        format!(r#"<polygon points="{}" />"#, points)
+    }
+}
+
 #[cfg(test)]
 mod tests
 {
@@ -146,5 +161,14 @@ mod tests
     fn test_is_not_clockwise()
     {
         assert!(!Polygon::square(Point::default(), 2.).is_clockwise());
+    }
+
+    #[test]
+    fn test_get_svg()
+    {
+        assert_eq!(
+            Polygon::square(Point::default(), 2.).to_svg(),
+            r#"<polygon points="0,0 2,0 2,2 0,2" />"#
+        );
     }
 }

@@ -1,4 +1,4 @@
-use super::{Distance, Unit, Vector};
+use super::{Distance, SVG, Unit, Vector};
 use super::EPSILON;
 
 use derive_more::{Display, Into, From};
@@ -13,6 +13,13 @@ pub struct Point { pub x: Unit, pub y: Unit }
 impl Distance for Point {
     fn squared_distance_from(&self, other: &Self) -> Unit {
         (self.x - other.x).powi(2) + (self.y - other.y).powi(2)
+    }
+}
+
+impl SVG for Point {
+    fn to_svg(&self) -> String
+    {
+        format!(r#"<circle cx="{}" cy="{}" r="1" />"#, self.x, self.y)
     }
 }
 
