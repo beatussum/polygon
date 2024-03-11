@@ -127,6 +127,36 @@ mod tests
     use super::*;
 
     #[test]
+    fn test_det()
+    {
+        let u = Vector { x: 1., y: 0.};
+        let v = Vector { x: 1., y: 1.};
+
+        assert!(u.det(&v) > 0.);
+        assert_eq!(u.det(&v), -v.det(&u));
+    }
+
+    #[test]
+    fn test_dot_negative()
+    {
+        let u = Vector { x: 1., y: 0.};
+        let v = Vector { x: -1., y: 1.};
+
+        assert_eq!(u.dot(&v), -1.);
+        assert_eq!(u.dot(&v), v.dot(&u));
+    }
+
+    #[test]
+    fn test_dot_positive()
+    {
+        let u = Vector { x: 1., y: 0.};
+        let v = Vector { x: 1., y: 1.};
+
+        assert_eq!(u.dot(&v), 1.);
+        assert_eq!(u.dot(&v), v.dot(&u));
+    }
+
+    #[test]
     fn test_collinear_and_orthogonal()
     {
         let u = Vector { x: 1., y: 1.};
