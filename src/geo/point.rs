@@ -28,8 +28,6 @@ impl PartialEq for Point {
     fn eq(&self, other: &Self) -> bool { self.distance_from(other) < EPSILON }
 }
 
-impl Eq for Point {}
-
 impl From<Vector> for Point {
     fn from(value: Vector) -> Self { Self { x: value.x, y: value.y } }
 }

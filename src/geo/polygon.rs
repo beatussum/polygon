@@ -1,8 +1,7 @@
 use super::SVG;
 use super::{Point, Rectangle, Segment, Unit, Vector};
 
-#[derive(PartialEq, Eq)]
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Polygon { pub points: Vec<Point> }
 
 impl Polygon {

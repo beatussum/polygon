@@ -69,8 +69,6 @@ impl PartialEq for Vector {
     }
 }
 
-impl Eq for Vector {}
-
 #[symmetric]
 impl Mul<Unit> for Vector {
     type Output = Vector;

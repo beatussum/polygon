@@ -5,9 +5,8 @@ use super::EPSILON;
 
 use derive_more::{Display, Into};
 
-#[derive(Eq, PartialEq)]
 #[derive(Copy, Clone)]
-#[derive(Debug, Default, Into)]
+#[derive(Debug, Default, Into, PartialEq)]
 #[derive(Display)]
 #[display(fmt = "[{} ; {}]", start, stop)]
 pub struct Segment { start: Point, stop: Point }
