@@ -1,4 +1,5 @@
-use super::{Point, Segment, SVG, Unit, Vector};
+use super::SVG;
+use super::{Point, Segment, Unit, Vector};
 
 #[derive(PartialEq, Eq)]
 #[derive(Clone, Debug, Default)]
