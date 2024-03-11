@@ -62,6 +62,38 @@ impl Polygon {
         }
     }
 
+    pub fn frame(&self) -> Polygon
+    {
+        let first = *self.points.first().unwrap();
+        let (mut xmin, mut ymin) = first.into();
+        let (mut xmax, mut ymax) = first.into();
+
+        for &p in self.points().skip(1) {
+            let (x, y) = p.into();
+
+            if x < xmin {
+                xmin = x;
+            } else if x > xmax {
+                xmax = x;
+            }
+
+            if y < ymin {
+                ymin = y;
+            } else if y > ymax {
+                ymax = y;
+            }
+        }
+
+        Polygon {
+            points: vec! [
+                Point { x: xmin, y: ymin },
+                Point { x: xmax, y: ymin },
+                Point { x: xmax, y: ymax },
+                Point { x: xmin, y: ymax }
+            ]
+        }
+    }
+
     pub fn is_clockwise(&self) -> bool { self.area() < 0. }
 
     pub fn pairs_of_points(&self)
@@ -142,6 +174,37 @@ mod tests
     fn test_area()
     {
         assert_eq!(Polygon::square(Point::default(), 2.).area(), 4.)
+    }
+
+    #[test]
+    fn test_frame()
+    {
+        let testing = Polygon {
+            points: vec![
+                Point { x: -1., y: 0. },
+                Point { x: 0., y: 1. },
+                Point { x: 1., y: 0. }
+            ]
+        }.frame();
+
+        let expected = Polygon {
+            points: vec! [
+                Point { x: -1., y: 0. },
+                Point { x: 1., y: 0. },
+                Point { x: 1., y: 1. },
+                Point { x: -1., y: 1. }
+            ]
+        };
+
+        assert_eq!(testing, expected);
+    }
+
+    #[test]
+    fn test_frame_square()
+    {
+        let testing = Polygon::square(Point::default(), 2.);
+
+        assert_eq!(testing, testing.frame());
     }
 
     #[test]
