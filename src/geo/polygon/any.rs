@@ -1,6 +1,6 @@
 use super::{Polygon, Rectangle};
 
-use super::super::SVG;
+use super::super::{Container, SVG};
 use super::super::{Point, Segment, Unit, Vector};
 
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -49,6 +49,30 @@ impl Any {
     pub fn segments(&self) -> impl Clone + Iterator<Item = Segment> + '_
     {
         self.pairs_of_points().map(|(&x, &y)| Segment::new(x, y))
+    }
+}
+
+impl Container for Any {
+    #[cfg(feature = "stupid")]
+    fn contains(&self, other: &Self) -> bool
+    {
+        self.contains(other.points.first().unwrap())
+    }
+}
+
+impl Container<Point> for Any {
+    #[cfg(feature = "stupid")]
+    fn contains(&self, &other: &Point) -> bool
+    {
+        let segment = Segment::new(other, self.frame().top_right());
+
+        let count =
+            self
+            .segments()
+            .map(|p| p.is_secant_with(&segment) as usize)
+            .sum::<usize>();
+
+        (count % 2) == 1
     }
 }
 
@@ -220,6 +244,57 @@ mod tests
                 ]
             }.is_clockwise()
         );
+    }
+
+    #[test]
+    fn test_contains_inside()
+    {
+        let point = Point::default();
+
+        let poly =
+            Any {
+                points: vec![
+                    Point { x: -1., y: 0. },
+                    Point { x: 0., y: 1. },
+                    Point { x: 1., y: 0. }
+                ]
+            };
+
+        assert!(poly.contains(&point));
+    }
+
+    #[test]
+    fn test_contains_on()
+    {
+        let point = Point { x: -1., y: 0. };
+
+        let poly =
+            Any {
+                points: vec![
+                    Point { x: -1., y: 0. },
+                    Point { x: 0., y: 1. },
+                    Point { x: 1., y: 0. }
+                ]
+            };
+
+        assert!(poly.contains(&point));
+    }
+
+    #[test]
+    fn test_contains_outside()
+    {
+        let point = Point { x: 10., y: 10. };
+
+        let poly =
+            Any {
+                points: vec![
+                    Point { x: -1., y: 0. },
+                    Point { x: 0., y: 1. },
+                    Point { x: 1., y: 0. }
+                ]
+            };
+
+        assert!(!poly.contains(&point));
     }
 
     #[test]

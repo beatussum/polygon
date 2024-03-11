@@ -8,6 +8,7 @@ use super::super::{Point, Unit};
 pub struct Rectangle { bottom_left: Point, top_right: Point }
 
 impl Rectangle {
+    pub fn bottom_left(&self) -> Point { self.bottom_left }
     pub fn is_square(&self) -> bool { self.height() == self.width() }
     pub fn height(&self) -> Unit { self.top_right.y - self.bottom_left.y }
 
@@ -40,6 +41,7 @@ impl Rectangle {
         Self { bottom_left, top_right: Point { x: x + side, y: y + side } }
     }
 
+    pub fn top_right(&self) -> Point { self.top_right }
     pub fn width(&self) -> Unit { self.top_right.x - self.bottom_left.x }
 }
 

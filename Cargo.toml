@@ -14,3 +14,7 @@ derive_more = "0.99.17"
 indoc = "2.0.4"
 itertools = "0.12.1"
 symm_impl = "0.1.2"
+
+[features]
+default = ["stupid"]
+stupid = []
