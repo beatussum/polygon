@@ -1,11 +1,8 @@
 mod point;
 pub use point::Point;
 
-mod polygon;
+pub mod polygon;
 pub use polygon::Polygon;
-
-mod rectangle;
-pub use rectangle::Rectangle;
 
 mod segment;
 pub use segment::Segment;
@@ -18,9 +15,12 @@ use symm_impl::symmetric;
 const EPSILON: f32 = 1e-5;
 pub type Unit = f32;
 
-trait Container<Other = Self> { fn contains(&self, other: &Other) -> bool; }
+pub trait Container<Other = Self>
+{
+    fn contains(&self, other: &Other) -> bool;
+}
 
-trait Distance<Other = Self>
+pub trait Distance<Other = Self>
 {
     fn distance_from(&self, other: &Other) -> Unit
     {
@@ -30,7 +30,7 @@ trait Distance<Other = Self>
     fn squared_distance_from(&self, other: &Other) -> Unit;
 }
 
-trait SVG { fn to_svg(&self) -> String; }
+pub trait SVG { fn to_svg(&self) -> String; }
 
 fn are_ccw(&a: &Point, &b: &Point, &c: &Point) -> bool
 {

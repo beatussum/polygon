@@ -5,7 +5,7 @@ use std::path::Path;
 
 pub mod geo;
 
-pub fn parse_from_string(str: &str) -> Vec<geo::Polygon>
+pub fn parse_from_string(str: &str) -> Vec<geo::polygon::Any>
 {
     str
         .lines()
@@ -33,11 +33,11 @@ pub fn parse_from_string(str: &str) -> Vec<geo::Polygon>
                 group.map(|(_, x, y)| (x, y).into()).collect::<Vec<_>>()
             }
         )
-        .map(|points| geo::Polygon { points })
+        .map(|points| geo::polygon::Any { points })
         .collect()
 }
 
-pub fn parse_from_file(path: &Path) -> Vec<geo::Polygon>
+pub fn parse_from_file(path: &Path) -> Vec<geo::polygon::Any>
 {
     parse_from_string(&fs::read_to_string(path).unwrap())
 }
@@ -47,7 +47,8 @@ mod tests
 {
     use super::*;
 
-    use geo::{Point, Polygon};
+    use geo::Point;
+    use geo::polygon::Any;
     use indoc::indoc;
 
     #[test]
@@ -71,7 +72,7 @@ mod tests
         "};
 
         let expected = vec![
-            Polygon {
+            Any {
                 points: vec! [
                     Point { x: 1.0, y: 1.0 },
                     Point { x: 5.0, y: 1.0 },
@@ -79,7 +80,7 @@ mod tests
                     Point { x: 1.0, y: 5.0 }
                 ]
             },
-            Polygon {
+            Any {
                 points: vec! [
                     Point { x: 0.0, y: 0.0 },
                     Point { x: 6.0, y: 0.0 },
@@ -87,14 +88,14 @@ mod tests
                     Point { x: 0.0, y: 6.0 }
                 ]
             },
-            Polygon {
+            Any {
                 points: vec! [
                     Point { x: 2.0, y: 2.0 },
                     Point { x: 2.0, y: 3.0 },
                     Point { x: 3.0, y: 2.0 }
                     ]
             },
-            Polygon {
+            Any {
                 points: vec! [
                     Point { x: 4.0, y: 4.0 },
                     Point { x: 4.0, y: 3.0 },
