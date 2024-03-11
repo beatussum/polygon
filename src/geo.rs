@@ -4,6 +4,9 @@ pub use point::Point;
 mod polygon;
 pub use polygon::Polygon;
 
+mod rectangle;
+pub use rectangle::Rectangle;
+
 mod segment;
 pub use segment::Segment;
 

@@ -1,5 +1,5 @@
 use super::SVG;
-use super::{Point, Segment, Unit, Vector};
+use super::{Point, Rectangle, Segment, Unit, Vector};
 
 #[derive(PartialEq, Eq)]
 #[derive(Clone, Debug, Default)]
@@ -62,7 +62,7 @@ impl Polygon {
         }
     }
 
-    pub fn frame(&self) -> Polygon
+    pub fn frame(&self) -> Rectangle
     {
         let first = *self.points.first().unwrap();
         let (mut xmin, mut ymin) = first.into();
@@ -84,13 +84,9 @@ impl Polygon {
             }
         }
 
-        Polygon {
-            points: vec! [
-                Point { x: xmin, y: ymin },
-                Point { x: xmax, y: ymin },
-                Point { x: xmax, y: ymax },
-                Point { x: xmin, y: ymax }
-            ]
+        Rectangle {
+            bottom_left: (xmin, ymin).into(),
+            top_right: (xmax, ymax).into()
         }
     }
 
@@ -187,13 +183,9 @@ mod tests
             ]
         }.frame();
 
-        let expected = Polygon {
-            points: vec! [
-                Point { x: -1., y: 0. },
-                Point { x: 1., y: 0. },
-                Point { x: 1., y: 1. },
-                Point { x: -1., y: 1. }
-            ]
+        let expected = Rectangle {
+            bottom_left: Point { x: -1., y: 0. },
+            top_right: Point { x: 1., y: 1. }
         };
 
         assert_eq!(testing, expected);
@@ -204,7 +196,7 @@ mod tests
     {
         let testing = Polygon::square(Point::default(), 2.);
 
-        assert_eq!(testing, testing.frame());
+        assert_eq!(testing, testing.frame().polygon());
     }
 
     #[test]
