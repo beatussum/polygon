@@ -71,7 +71,7 @@ mod tests
             3 3 4
         "};
 
-        let expected = vec![
+        let expected = vec! [
             Any {
                 points: vec! [
                     Point { x: 1.0, y: 1.0 },
@@ -93,7 +93,7 @@ mod tests
                     Point { x: 2.0, y: 2.0 },
                     Point { x: 2.0, y: 3.0 },
                     Point { x: 3.0, y: 2.0 }
-                    ]
+                ]
             },
             Any {
                 points: vec! [

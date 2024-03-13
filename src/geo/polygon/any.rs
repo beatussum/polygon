@@ -208,7 +208,7 @@ mod tests
 
         let testing =
             Any {
-                points: vec![
+                points: vec! [
                     Point { x: -1., y: 0. },
                     Point { x: 0., y: 1. },
                     Point { x: 1., y: 0. }
@@ -223,7 +223,7 @@ mod tests
     {
         assert!(
             Any {
-                points: vec![
+                points: vec! [
                     Point { x: -1., y: 0. },
                     Point { x: 0., y: 1. },
                     Point { x: 1., y: 0. }
@@ -237,7 +237,7 @@ mod tests
     {
         assert!(
             !Any {
-                points: vec![
+                points: vec! [
                     Point { x: 1., y: 0. },
                     Point { x: 0., y: 1. },
                     Point { x: -1., y: 0. }
@@ -253,7 +253,7 @@ mod tests
 
         let poly =
             Any {
-                points: vec![
+                points: vec! [
                     Point { x: -1., y: 0. },
                     Point { x: 0., y: 1. },
                     Point { x: 1., y: 0. }
@@ -270,7 +270,7 @@ mod tests
 
         let poly =
             Any {
-                points: vec![
+                points: vec! [
                     Point { x: -1., y: 0. },
                     Point { x: 0., y: 1. },
                     Point { x: 1., y: 0. }
@@ -287,7 +287,7 @@ mod tests
 
         let poly =
             Any {
-                points: vec![
+                points: vec! [
                     Point { x: -1., y: 0. },
                     Point { x: 0., y: 1. },
                     Point { x: 1., y: 0. }
@@ -302,7 +302,7 @@ mod tests
     {
         let testing =
             Any {
-                points: vec![
+                points: vec! [
                     Point { x: -1., y: 0. },
                     Point { x: 0., y: 1. },
                     Point { x: 1., y: 0. }
