@@ -4,6 +4,7 @@ use std::fs;
 use std::path::Path;
 
 pub mod geo;
+pub mod tree;
 
 pub fn parse_from_string(str: &str) -> Vec<geo::polygon::Any>
 {
