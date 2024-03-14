@@ -15,6 +15,8 @@ pub struct Cell<T>
 #[derive(Clone, Debug)]
 pub struct Node<T>(RefCell<Cell<T>>);
 
+pub struct BFSIterator<T> { unexplored: VecDeque<Rc<Node<T>>> }
+
 impl<T> Cell<T> {
     pub fn children(&self) -> &Vec<Rc<Node<T>>> { &self.children }
 
@@ -77,24 +79,11 @@ impl<T> Node<T> {
         parent.borrow_mut().children.push(self.clone());
     }
 
-    pub fn bfs(self: &Rc<Self>) -> Vec<Rc<Self>>
+    pub fn bfs(self: &Rc<Self>) -> Vec<Rc<Self>> { self.bfs_iter().collect() }
+
+    pub fn bfs_iter(self: &Rc<Self>) -> BFSIterator<T>
     {
-        let mut ret = Vec::new();
-        let mut unexplored = VecDeque::new();
-
-        ret.push(self.clone());
-        unexplored.push_back(self.clone());
-
-        while !unexplored.is_empty() {
-            let node = unexplored.pop_front().unwrap();
-
-            for child in node.borrow().children.iter() {
-                unexplored.push_back(child.clone());
-                ret.push(child.clone());
-            }
-        }
-
-        ret
+        BFSIterator::new(self)
     }
 
     pub fn borrow(&self) -> Ref<Cell<T>> { self.0.borrow() }
@@ -154,6 +143,35 @@ impl<T> Node<T> {
         match self.grandparent() {
             Some(grandparent) => self.attach(&grandparent.clone()),
             None => ()
+        }
+    }
+}
+
+impl<T> BFSIterator<T> {
+    pub fn new(node: &Rc<Node<T>>) -> Self
+    {
+        let mut unexplored = VecDeque::new();
+        unexplored.push_back(node.clone());
+
+        Self { unexplored }
+    }
+}
+
+impl<T> Iterator for BFSIterator<T> {
+    type Item = Rc<Node<T>>;
+
+    fn next(&mut self) -> Option<Self::Item>
+    {
+        if self.unexplored.is_empty() {
+            None
+        } else {
+            let ret = self.unexplored.pop_front().unwrap();
+
+            for i in ret.borrow().children.clone() {
+                self.unexplored.push_back(i);
+            }
+
+            Some(ret)
         }
     }
 }
