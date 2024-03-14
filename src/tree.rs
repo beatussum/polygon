@@ -1,7 +1,9 @@
 use std::cell::{Ref, RefCell, RefMut};
+use std::cmp::min;
 use std::collections::VecDeque;
 use std::rc::{Rc, Weak};
 
+#[derive(Clone, Debug)]
 pub struct Cell<T>
 {
     children: Vec<Rc<Node<T>>>,
@@ -10,6 +12,7 @@ pub struct Cell<T>
     value: T
 }
 
+#[derive(Clone, Debug)]
 pub struct Node<T>(RefCell<Cell<T>>);
 
 impl<T> Cell<T> {
@@ -39,11 +42,11 @@ impl<T> Node<T> {
     {
         match self.parent() {
             Some(mut parent) => {
-                let mut i = n;
+                let mut i = n - 1;
                 let mut grandparent = parent.parent();
 
                 while grandparent.is_some() {
-                    if n == 0 {
+                    if i == 0 {
                         break;
                     } else {
                         parent = grandparent.clone().unwrap();
@@ -52,14 +55,14 @@ impl<T> Node<T> {
                     }
                 }
 
-                if n == 0 {
+                if i == 0 {
                     Ok(parent)
                 } else {
                     Err((n - i, Some(parent)))
                 }
             }
 
-            None => Err((n, None))
+            None => Err((0, None))
         }
     }
 
@@ -79,6 +82,7 @@ impl<T> Node<T> {
         let mut ret = Vec::new();
         let mut unexplored = VecDeque::new();
 
+        ret.push(self.clone());
         unexplored.push_back(self.clone());
 
         while !unexplored.is_empty() {
@@ -100,16 +104,24 @@ impl<T> Node<T> {
     {
         match self.parent() {
             Some(parent) => {
+                self.borrow_mut().parent = None;
+
                 parent
                     .borrow_mut()
                     .children
                     .swap_remove(self.borrow().index);
 
-                parent
-                    .borrow_mut()
-                    .children[self.borrow().index]
-                    .borrow_mut()
-                    .index = self.borrow().index;
+                let count = parent.borrow().children.len();
+
+                if count != 0 {
+                    let index = min(self.borrow().index, count - 1);
+
+                    parent
+                        .borrow_mut()
+                        .children[index]
+                        .borrow_mut()
+                        .index = index;
+                }
             }
 
             None => ()
@@ -124,9 +136,6 @@ impl<T> Node<T> {
         }
     }
 
-    pub fn is_leaf(&self) -> bool { self.borrow().is_leaf() }
-    pub fn is_root(&self) -> bool { self.borrow().is_root() }
-
     pub fn new(value: T) -> Rc<Self>
     {
         Rc::new(Node(RefCell::new(Cell::new(value))))
@@ -140,13 +149,119 @@ impl<T> Node<T> {
         }
     }
 
-    pub fn set_value(&self, value: T) { self.borrow_mut().set_value(value); }
-
     pub fn upgrade(self: &Rc<Self>)
     {
         match self.grandparent() {
             Some(grandparent) => self.attach(&grandparent.clone()),
             None => ()
         }
+    }
+}
+
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+
+    fn generate_tree() -> (Rc<Node<i32>>, Rc<Node<i32>>)
+    {
+        let a = Node::new(0);
+        let b = Node::new(1);
+        let c = Node::new(2);
+        let d = Node::new(3);
+        let e = Node::new(4);
+        let f = Node::new(5);
+
+        a.adopt(&b);
+        a.adopt(&c);
+        a.adopt(&d);
+        b.adopt(&e);
+        b.adopt(&f);
+
+        (a, f)
+    }
+
+    #[test]
+    fn test_above_correct()
+    {
+        let (a, f) = generate_tree();
+
+        assert!(Rc::ptr_eq(&f.above(2).unwrap(), &a));
+    }
+
+    #[test]
+    fn test_above_root()
+    {
+        let (n, ancestor) = Node::new(0).above(0).err().unwrap();
+
+        assert_eq!(n, 0);
+        assert!(ancestor.is_none());
+    }
+
+    #[test]
+    fn test_above_too_much()
+    {
+        let (a, f) = generate_tree();
+
+        let (n, ancestor) = f.above(5).err().unwrap();
+
+        assert_eq!(n, 2);
+        assert!(Rc::ptr_eq(&a, &ancestor.unwrap()));
+    }
+
+    #[test]
+    fn test_adopt()
+    {
+        let a = Node::new(0);
+        let b = Node::new(1);
+
+        a.adopt(&b);
+
+        let testing = a.borrow().children().first().unwrap().clone();
+
+        assert_eq!(a.borrow().children().len(), 1);
+        assert!(Rc::ptr_eq(&testing, &b));
+        assert_eq!(testing.borrow().value(), &1);
+        assert!(Rc::ptr_eq(&testing.parent().unwrap(), &a));
+    }
+
+    #[test]
+    fn test_bfs()
+    {
+        for (i, item) in generate_tree().0.bfs().iter().enumerate() {
+            assert_eq!(*item.borrow().value(), i as i32);
+        }
+    }
+
+    #[test]
+    fn test_detach()
+    {
+        let (a, f) = generate_tree();
+
+        f.detach();
+
+        for (i, item) in a.bfs().iter().enumerate() {
+            assert_eq!(*item.borrow().value(), i as i32);
+        }
+
+        assert!(f.is_root());
+    }
+
+    #[test]
+    fn test_upgrade()
+    {
+        let (a, f) = generate_tree();
+
+        f.upgrade();
+
+        let testing =
+            a
+            .bfs()
+            .iter()
+            .map(|x| *x.borrow().value())
+            .collect::<Vec<_>>();
+
+        assert_eq!(testing, vec! [0, 1, 2, 3, 5, 4]);
+        assert!(Rc::ptr_eq(&a, &f.parent().unwrap()));
     }
 }
