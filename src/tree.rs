@@ -17,27 +17,6 @@ pub struct Node<T>(RefCell<Cell<T>>);
 
 pub struct BFSIterator<T> { unexplored: VecDeque<Rc<Node<T>>> }
 
-impl<T> Cell<T> {
-    pub fn children(&self) -> &Vec<Rc<Node<T>>> { &self.children }
-
-    pub fn is_leaf(&self) -> bool { self.children.is_empty() }
-    pub fn is_root(&self) -> bool { self.parent.is_none() }
-
-    fn new(value: T) -> Self
-    {
-        Cell {
-            children: Vec::new(),
-            index: usize::default(),
-            parent: None,
-            value
-        }
-    }
-
-    pub fn parent(&self) -> &Option<Weak<Node<T>>> { &self.parent }
-    pub fn set_value(&mut self, value: T) { self.value = value; }
-    pub fn value(&self) -> &T { &self.value }
-}
-
 impl<T> Node<T> {
     pub fn above(&self, n: usize)
         -> Result<Rc<Self>, (usize, Option<Rc<Self>>)>
@@ -86,8 +65,13 @@ impl<T> Node<T> {
         BFSIterator::new(self)
     }
 
-    pub fn borrow(&self) -> Ref<Cell<T>> { self.0.borrow() }
-    pub fn borrow_mut(&self) -> RefMut<Cell<T>> { self.0.borrow_mut() }
+    fn borrow(&self) -> Ref<Cell<T>> { self.0.borrow() }
+    fn borrow_mut(&self) -> RefMut<Cell<T>> { self.0.borrow_mut() }
+
+    pub fn children(&self) -> Ref<Vec<Rc<Node<T>>>>
+    {
+        Ref::map(self.borrow(), |x| &x.children)
+    }
 
     pub fn detach(&self)
     {
@@ -117,6 +101,9 @@ impl<T> Node<T> {
         }
     }
 
+    pub fn is_leaf(&self) -> bool { self.borrow().children.is_empty() }
+    pub fn is_root(&self) -> bool { self.borrow().parent.is_none() }
+
     pub fn grandparent(&self) -> Option<Rc<Self>>
     {
         match self.parent() {
@@ -127,16 +114,29 @@ impl<T> Node<T> {
 
     pub fn new(value: T) -> Rc<Self>
     {
-        Rc::new(Node(RefCell::new(Cell::new(value))))
+        Rc::new(
+            Node(
+                RefCell::new(
+                    Cell {
+                        children: Vec::new(),
+                        index: usize::default(),
+                        parent: None,
+                        value
+                    }
+                )
+            )
+        )
     }
 
     pub fn parent(&self) -> Option<Rc<Self>>
     {
-        match self.borrow().parent() {
+        match self.borrow().parent {
             Some(ref parent) => parent.upgrade(),
             None => None
         }
     }
+
+    pub fn set_value(&self, value: T) { self.borrow_mut().value = value; }
 
     pub fn upgrade(self: &Rc<Self>)
     {
@@ -145,6 +145,8 @@ impl<T> Node<T> {
             None => ()
         }
     }
+
+    pub fn value(&self) -> Ref<T> { Ref::map(self.borrow(), |x| &x.value) }
 }
 
 impl<T> BFSIterator<T> {
@@ -235,11 +237,11 @@ mod tests
 
         a.adopt(&b);
 
-        let testing = a.borrow().children().first().unwrap().clone();
+        let testing = a.children().first().unwrap().clone();
 
-        assert_eq!(a.borrow().children().len(), 1);
+        assert_eq!(a.children().len(), 1);
         assert!(Rc::ptr_eq(&testing, &b));
-        assert_eq!(testing.borrow().value(), &1);
+        assert_eq!(*testing.value(), 1);
         assert!(Rc::ptr_eq(&testing.parent().unwrap(), &a));
     }
 
@@ -247,7 +249,7 @@ mod tests
     fn test_bfs()
     {
         for (i, item) in generate_tree().0.bfs().iter().enumerate() {
-            assert_eq!(*item.borrow().value(), i as i32);
+            assert_eq!(*item.value(), i as i32);
         }
     }
 
@@ -259,10 +261,10 @@ mod tests
         f.detach();
 
         for (i, item) in a.bfs().iter().enumerate() {
-            assert_eq!(*item.borrow().value(), i as i32);
+            assert_eq!(*item.value(), i as i32);
         }
 
-        assert!(f.borrow().is_root());
+        assert!(f.is_root());
     }
 
     #[test]
@@ -276,7 +278,7 @@ mod tests
             a
             .bfs()
             .iter()
-            .map(|x| *x.borrow().value())
+            .map(|x| *x.value())
             .collect::<Vec<_>>();
 
         assert_eq!(testing, vec! [0, 1, 2, 3, 5, 4]);
