@@ -244,7 +244,7 @@ mod tests
             assert_eq!(*item.borrow().value(), i as i32);
         }
 
-        assert!(f.is_root());
+        assert!(f.borrow().is_root());
     }
 
     #[test]
