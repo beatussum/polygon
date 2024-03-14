@@ -17,7 +17,7 @@ impl<T> Cell<T> {
     pub fn is_leaf(&self) -> bool { self.children.is_empty() }
     pub fn is_root(&self) -> bool { self.parent.is_none() }
 
-    pub fn new(value: T) -> Self
+    fn new(value: T) -> Self
     {
         Cell {
             children: Vec::new(),
@@ -62,13 +62,15 @@ impl<T> Node<T> {
         }
     }
 
-    pub fn attach(self: Rc<Self>, parent: Rc<Self>)
+    pub fn adopt(self: &Rc<Self>, child: &Rc<Self>) { child.attach(self); }
+
+    pub fn attach(self: &Rc<Self>, parent: &Rc<Self>)
     {
         self.detach();
 
         self.borrow_mut().index = parent.borrow().children.len();
         self.borrow_mut().parent = Some(Rc::downgrade(&parent));
-        parent.borrow_mut().children.push(self);
+        parent.borrow_mut().children.push(self.clone());
     }
 
     pub fn borrow(&self) -> Ref<Cell<T>> { self.0.borrow() }
@@ -120,10 +122,10 @@ impl<T> Node<T> {
 
     pub fn set_value(&self, value: T) { self.borrow_mut().set_value(value); }
 
-    pub fn upgrade(self: Rc<Self>)
+    pub fn upgrade(self: &Rc<Self>)
     {
         match self.grandparent() {
-            Some(grandparent) => self.attach(grandparent),
+            Some(grandparent) => self.attach(&grandparent.clone()),
             None => ()
         }
     }
