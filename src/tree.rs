@@ -1,4 +1,5 @@
 use std::cell::{Ref, RefCell, RefMut};
+use std::collections::VecDeque;
 use std::rc::{Rc, Weak};
 
 pub struct Cell<T>
@@ -71,6 +72,25 @@ impl<T> Node<T> {
         self.borrow_mut().index = parent.borrow().children.len();
         self.borrow_mut().parent = Some(Rc::downgrade(&parent));
         parent.borrow_mut().children.push(self.clone());
+    }
+
+    pub fn bfs(self: &Rc<Self>) -> Vec<Rc<Self>>
+    {
+        let mut ret = Vec::new();
+        let mut unexplored = VecDeque::new();
+
+        unexplored.push_back(self.clone());
+
+        while !unexplored.is_empty() {
+            let node = unexplored.pop_front().unwrap();
+
+            for child in node.borrow().children.iter() {
+                unexplored.push_back(child.clone());
+                ret.push(child.clone());
+            }
+        }
+
+        ret
     }
 
     pub fn borrow(&self) -> Ref<Cell<T>> { self.0.borrow() }
