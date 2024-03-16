@@ -75,8 +75,8 @@ impl<T> Node<T> {
 
     pub fn detach(&self)
     {
-        match self.parent() {
-            Some(parent) => {
+        self.parent().map(
+            |parent| {
                 self.borrow_mut().parent = None;
 
                 parent
@@ -96,9 +96,7 @@ impl<T> Node<T> {
                         .index = index;
                 }
             }
-
-            None => ()
-        }
+        );
     }
 
     pub fn is_leaf(&self) -> bool { self.borrow().children.is_empty() }
@@ -106,10 +104,7 @@ impl<T> Node<T> {
 
     pub fn grandparent(&self) -> Option<Rc<Self>>
     {
-        match self.parent() {
-            Some(parent) => parent.parent(),
-            None => None
-        }
+        self.parent().and_then(|parent| parent.parent())
     }
 
     pub fn new(value: T) -> Rc<Self>
@@ -130,20 +125,16 @@ impl<T> Node<T> {
 
     pub fn parent(&self) -> Option<Rc<Self>>
     {
-        match self.borrow().parent {
-            Some(ref parent) => parent.upgrade(),
-            None => None
-        }
+        self.borrow().parent.as_ref().and_then(|parent| parent.upgrade())
     }
 
     pub fn set_value(&self, value: T) { self.borrow_mut().value = value; }
 
     pub fn upgrade(self: &Rc<Self>)
     {
-        match self.grandparent() {
-            Some(grandparent) => self.attach(&grandparent.clone()),
-            None => ()
-        }
+        self
+            .grandparent()
+            .map(|grandparent| self.attach(&grandparent.clone()));
     }
 
     pub fn value(&self) -> Ref<T> { Ref::map(self.borrow(), |x| &x.value) }
