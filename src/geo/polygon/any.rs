@@ -68,9 +68,9 @@ impl Container<Point> for Any {
 
         let count =
             self
-            .segments()
-            .map(|p| p.is_secant_with(&segment) as usize)
-            .sum::<usize>();
+                .segments()
+                .map(|p| p.is_secant_with(&segment) as usize)
+                .sum::<usize>();
 
         (count % 2) == 1
     }
