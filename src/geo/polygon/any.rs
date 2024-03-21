@@ -7,9 +7,9 @@ use super::super::{Point, Segment, Unit, Vector};
 pub struct Any { pub points: Vec<Point> }
 
 impl Any {
-    pub fn clockwise(&mut self) -> bool
+    pub fn counterclockwise(&mut self) -> bool
     {
-        if self.is_clockwise() {
+        if self.is_counterclockwise() {
             false
         } else {
             self.revert();
@@ -18,7 +18,7 @@ impl Any {
         }
     }
 
-    pub fn is_clockwise(&self) -> bool { self.area() < 0. }
+    pub fn is_counterclockwise(&self) -> bool { self.area() > 0. }
 
     pub fn pairs_of_points(&self)
         -> impl Clone + Iterator<Item = (&Point, &Point)>
@@ -28,16 +28,21 @@ impl Any {
             .zip(self.points.iter().skip(1))
             .chain(
                 [(self.points.last().unwrap(), self.points.first().unwrap())]
-                .into_iter()
+                    .into_iter()
             )
     }
 
     pub fn pairs_of_segments(&self)
         -> impl Clone + Iterator<Item = (Segment, Segment)> + '_
     {
-        self.segments().zip(self.segments().skip(1))
+        self
+            .segments()
+            .zip(self.segments().skip(1))
+            .chain(
+                [(self.segment(self.points.len() - 1), self.segment(0))]
+                    .into_iter()
+            )
     }
-
 
     pub fn points(&self) -> impl Clone + Iterator<Item = &Point>
     {
@@ -45,6 +50,15 @@ impl Any {
     }
 
     pub fn revert(&mut self) { self.points.reverse(); }
+
+    pub fn segment(&self, index: usize) -> Segment
+    {
+        let next =
+            if index == (self.points.len() - 1) { 0 }
+            else { index + 1 };
+
+        Segment::new(self.points[index], self.points[next])
+    }
 
     pub fn segments(&self) -> impl Clone + Iterator<Item = Segment> + '_
     {
@@ -64,12 +78,48 @@ impl Container<Point> for Any {
     #[cfg(feature = "stupid")]
     fn contains(&self, &other: &Point) -> bool
     {
-        let segment = Segment::new(other, self.frame().top_right());
+        fn same_sign(a: Unit, b: Unit) -> bool
+        {
+            a.is_sign_negative() == b.is_sign_negative()
+        }
+
+        let point = (other.x, self.frame().top_right().y).into();
+        let u = Segment::new(other, point);
 
         let count =
             self
-                .segments()
-                .map(|p| p.is_secant_with(&segment) as usize)
+                .pairs_of_segments()
+                .map(
+                    |(a, b)| {
+                        if a.is_secant_with(&u) {
+                            if b.is_secant_with(&u) {
+                                let a: Vector = a.into();
+                                let b: Vector = b.into();
+                                let u: Vector = u.into();
+
+
+                                if same_sign(u.det(&a), u.det(&b)) {
+                                    // Counting 0 instead of 1 because the
+                                    // intersection will be counted with the
+                                    // next segment pair.
+
+                                    0
+                                } else {
+                                    // Counting 1 instead of 0 allowing the
+                                    // intersection to be counted twice, (once
+                                    // here, once with the next segment pair)
+                                    // which is the same as not being counted at all.
+
+                                    1
+                                }
+                            } else {
+                                1
+                            }
+                        } else {
+                            0
+                        }
+                    }
+                )
                 .sum::<usize>();
 
         (count % 2) == 1
@@ -219,16 +269,16 @@ mod tests
     }
 
     #[test]
-    fn test_is_clockwise()
+    fn test_is_counter_clockwise()
     {
         assert!(
-            Any {
+            !Any {
                 points: vec! [
                     Point { x: -1., y: 0. },
                     Point { x: 0., y: 1. },
                     Point { x: 1., y: 0. }
                 ]
-            }.is_clockwise()
+            }.is_counterclockwise()
         );
     }
 
@@ -236,44 +286,183 @@ mod tests
     fn test_is_not_clockwise()
     {
         assert!(
-            !Any {
+            Any {
                 points: vec! [
                     Point { x: 1., y: 0. },
                     Point { x: 0., y: 1. },
                     Point { x: -1., y: 0. }
                 ]
-            }.is_clockwise()
+            }.is_counterclockwise()
         );
     }
 
     #[test]
-    fn test_contains_inside()
-    {
-        let point = Point::default();
-
-        let poly =
-            Any {
-                points: vec! [
-                    Point { x: -1., y: 0. },
-                    Point { x: 0., y: 1. },
-                    Point { x: 1., y: 0. }
-                ]
-            };
-
-        assert!(poly.contains(&point));
-    }
-
-    #[test]
-    fn test_contains_on()
+    fn test_contains_on_point()
     {
         let point = Point { x: -1., y: 0. };
 
         let poly =
             Any {
                 points: vec! [
-                    Point { x: -1., y: 0. },
+                    Point { x: 1., y: 0. },
                     Point { x: 0., y: 1. },
-                    Point { x: 1., y: 0. }
+                    Point { x: -1., y: 0. }
+                ]
+            };
+
+        assert!(!poly.contains(&point));
+    }
+
+    #[test]
+    fn test_contains_on_segment()
+    {
+        let point = Point::default();
+
+        let poly =
+            Any {
+                points: vec! [
+                    Point { x: 1., y: 0. },
+                    Point { x: 0., y: 1. },
+                    Point { x: -1., y: 0. }
+                ]
+            };
+
+        assert!(!poly.contains(&point));
+    }
+
+    #[test]
+    fn test_contains_outside()
+    {
+        let point = Point { x: 1., y: -1. };
+
+        let poly =
+            Any {
+                points: vec! [
+                    Point { x: 3., y: 0. },
+                    Point { x: 2., y: 2. },
+                    Point { x: 0., y: 0. }
+                ]
+            };
+
+        assert!(!poly.contains(&point));
+    }
+
+    #[test]
+    fn test_contains_outside_far_away()
+    {
+        let point = Point { x: 10., y: 10. };
+
+        let poly =
+            Any {
+                points: vec! [
+                    Point { x: 1., y: 0. },
+                    Point { x: 0., y: 1. },
+                    Point { x: -1., y: 0. }
+                ]
+            };
+
+        assert!(!poly.contains(&point));
+    }
+
+    #[test]
+    fn test_contains_outside_pass_by_point()
+    {
+        let point = Point { x: 1., y: -1. };
+
+        let poly =
+            Any {
+                points: vec! [
+                    Point { x: 1., y: 0. },
+                    Point { x: 0., y: 1. },
+                    Point { x: -1., y: 0. }
+                ]
+            };
+
+        assert!(!poly.contains(&point));
+    }
+
+    #[test]
+    fn test_contains_outside_pass_by_three_segments()
+    {
+        let point = Point { x: 0., y: -1. };
+
+        let poly =
+            Any {
+                points: vec! [
+                    Point { x: 0., y: 0. },
+                    Point { x: 0., y: 1. },
+                    Point { x: 0., y: 2. },
+                    Point { x: 0., y: 3. },
+                    Point { x: -1., y: 0. }
+                ]
+            };
+
+        assert!(!poly.contains(&point));
+    }
+
+    #[test]
+    fn test_contains_outside_pass_by_two_segments()
+    {
+        let point = Point { x: 0., y: -1. };
+
+        let poly =
+            Any {
+                points: vec! [
+                    Point { x: 0., y: 0. },
+                    Point { x: 0., y: 1. },
+                    Point { x: 0., y: 2. },
+                    Point { x: -1., y: 0. }
+                ]
+            };
+
+        assert!(!poly.contains(&point));
+    }
+
+    #[test]
+    fn test_contains_outside_pass_by_segment()
+    {
+        let point = Point { x: 0., y: -1. };
+
+        let poly =
+            Any {
+                points: vec! [
+                    Point { x: 1., y: 0. },
+                    Point { x: 0., y: 1. },
+                    Point { x: 0., y: 0. }
+                ]
+            };
+
+        assert!(!poly.contains(&point));
+    }
+
+    #[test]
+    fn test_contains_outside_pass_by_segment_reversed()
+    {
+        let point = Point { x: 0., y: -1. };
+
+        let poly =
+            Any {
+                points: vec! [
+                    Point { x: 0., y: 1. },
+                    Point { x: -1., y: 0. },
+                    Point { x: 0., y: 0. }
+                ]
+            };
+
+        assert!(!poly.contains(&point));
+    }
+
+    #[test]
+    fn test_contains_pass_by_point()
+    {
+        let point = Point { x: 0., y: 0.5 };
+
+        let poly =
+            Any {
+                points: vec! [
+                    Point { x: 1., y: 0. },
+                    Point { x: 0., y: 1. },
+                    Point { x: -1., y: 0. }
                 ]
             };
 
@@ -281,20 +470,23 @@ mod tests
     }
 
     #[test]
-    fn test_contains_outside()
+    fn test_contains_pass_by_segment()
     {
-        let point = Point { x: 10., y: 10. };
+        let point = Point { x: 1., y: 0.5 };
 
         let poly =
             Any {
                 points: vec! [
-                    Point { x: -1., y: 0. },
-                    Point { x: 0., y: 1. },
-                    Point { x: 1., y: 0. }
+                    Point { x: 0., y: 0. },
+                    Point { x: 2., y: 0. },
+                    Point { x: 2., y: 1. },
+                    Point { x: 1., y: 1. },
+                    Point { x: 1., y: 2. },
+                    Point { x: 0., y: 2. }
                 ]
             };
 
-        assert!(!poly.contains(&point));
+        assert!(poly.contains(&point));
     }
 
     #[test]
