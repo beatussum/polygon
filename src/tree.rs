@@ -68,21 +68,6 @@ impl<T> Node<T> {
     fn borrow(&self) -> Ref<Cell<T>> { self.0.borrow() }
     fn borrow_mut(&self) -> RefMut<Cell<T>> { self.0.borrow_mut() }
 
-    pub fn brothers<'a>(self: &'a Rc<Self>) -> Option<impl Iterator<Item = Rc<Self>> + 'a>
-    {
-        self
-            .parent()
-            .as_ref()
-            .map(|parent| parent.children().clone())
-            .map(
-                |children| {
-                    children
-                        .into_iter()
-                        .filter(|child| !Rc::ptr_eq(child, self))
-                }
-            )
-    }
-
     pub fn children(&self) -> Ref<Vec<Rc<Node<T>>>>
     {
         Ref::map(self.borrow(), |x| &x.children)

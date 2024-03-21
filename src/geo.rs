@@ -10,7 +10,13 @@ pub use segment::Segment;
 mod vector;
 pub use vector::Vector;
 
+use polygon::Any;
+use super::tree::Node;
+
 use symm_impl::symmetric;
+
+use std::collections::VecDeque;
+use std::rc::Rc;
 
 const EPSILON: f32 = 1e-5;
 pub type Unit = f32;
@@ -35,6 +41,46 @@ pub trait SVG { fn to_svg(&self) -> String; }
 fn are_ccw(&a: &Point, &b: &Point, &c: &Point) -> bool
 {
     Vector::from((a, b)).det(&(a, c).into()) > 0.
+}
+
+#[cfg(feature = "stupid")]
+pub fn generate_tree_from_polygons(polygons: Vec<Any>)
+    -> Rc<Node<(isize, Any)>>
+{
+    let ret = Node::new((-1, Any::default()));
+
+    let mut placement_queue = VecDeque::new();
+
+    for (i, mut p) in polygons.into_iter().enumerate() {
+        p.counterclockwise();
+
+        let node = Node::new((i as isize, p));
+
+        ret.adopt(&node);
+        placement_queue.push_back(node);
+    }
+
+    while !placement_queue.is_empty() {
+        let to_place = placement_queue.pop_front().unwrap();
+        let parent = to_place.parent().unwrap();
+        let brothers = parent.children();
+
+        let brothers =
+            brothers
+                .iter()
+                .filter(|child| Rc::ptr_eq(child, &to_place));
+
+        for brother in brothers {
+            if brother.value().1.contains(&to_place.value().1) {
+                brother.adopt(&to_place);
+                placement_queue.push_back(to_place);
+
+                break;
+            }
+        }
+    }
+
+    ret
 }
 
 #[symmetric]
