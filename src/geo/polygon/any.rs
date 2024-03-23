@@ -60,7 +60,13 @@ impl Container<Point> for Any {
             a.is_sign_negative() == b.is_sign_negative()
         }
 
-        let point = (other.x, self.frame().top_right().y).into();
+        let y = self.frame().top_right().y;
+
+        if other.y >= y {
+            return false;
+        }
+
+        let point = (other.x, y).into();
         let u = Segment::new(other, point);
 
         let count =
