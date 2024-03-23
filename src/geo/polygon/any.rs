@@ -3,45 +3,22 @@ use super::{Polygon, Rectangle};
 use super::super::{Container, SVG};
 use super::super::{Point, Segment, Unit, Vector};
 
+use std::iter::once;
+
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Any { pub points: Vec<Point> }
 
 impl Any {
-    pub fn counterclockwise(&mut self) -> bool
-    {
-        if self.is_counterclockwise() {
-            false
-        } else {
-            self.revert();
-
-            true
-        }
-    }
-
-    pub fn is_counterclockwise(&self) -> bool { self.area() > 0. }
-
     pub fn pairs_of_points(&self)
         -> impl Clone + Iterator<Item = (&Point, &Point)>
     {
-        self
-            .points()
-            .zip(self.points.iter().skip(1))
-            .chain(
-                [(self.points.last().unwrap(), self.points.first().unwrap())]
-                    .into_iter()
-            )
+        self.points().zip(self.points.iter().skip(1))
     }
 
     pub fn pairs_of_segments(&self)
         -> impl Clone + Iterator<Item = (Segment, Segment)> + '_
     {
-        self
-            .segments()
-            .zip(self.segments().skip(1))
-            .chain(
-                [(self.segment(self.points.len() - 1), self.segment(0))]
-                    .into_iter()
-            )
+        self.segments().zip(self.segments().skip(1))
     }
 
     pub fn points(&self) -> impl Clone + Iterator<Item = &Point>
@@ -62,7 +39,7 @@ impl Any {
 
     pub fn segments(&self) -> impl Clone + Iterator<Item = Segment> + '_
     {
-        self.pairs_of_points().map(|(&x, &y)| Segment::new(x, y))
+        (0..self.points.len()).map(|index| self.segment(index))
     }
 }
 
@@ -89,6 +66,7 @@ impl Container<Point> for Any {
         let count =
             self
                 .pairs_of_segments()
+                .chain(once((self.segment(self.points.len() - 1), self.segment(0))))
                 .map(
                     |(a, b)| {
                         if a.is_secant_with(&u) {
@@ -153,7 +131,8 @@ impl Polygon for Any {
         self
             .pairs_of_points()
             .map(|(&x, &y)| Vector::from(x).det(&y.into()))
-            .sum::<Unit>() / 2.
+            .sum::<Unit>()
+            .abs() / 2.
     }
 
     fn frame(&self) -> Rectangle
@@ -244,7 +223,7 @@ mod tests
                 ]
             }.area();
 
-        assert_eq!(testing, -1.)
+        assert_eq!(testing, 1.)
     }
 
     #[test]
@@ -266,34 +245,6 @@ mod tests
             }.frame();
 
         assert_eq!(expected, testing);
-    }
-
-    #[test]
-    fn test_is_counter_clockwise()
-    {
-        assert!(
-            !Any {
-                points: vec! [
-                    Point { x: -1., y: 0. },
-                    Point { x: 0., y: 1. },
-                    Point { x: 1., y: 0. }
-                ]
-            }.is_counterclockwise()
-        );
-    }
-
-    #[test]
-    fn test_is_not_clockwise()
-    {
-        assert!(
-            Any {
-                points: vec! [
-                    Point { x: 1., y: 0. },
-                    Point { x: 0., y: 1. },
-                    Point { x: -1., y: 0. }
-                ]
-            }.is_counterclockwise()
-        );
     }
 
     #[test]

@@ -51,9 +51,7 @@ pub fn generate_tree_from_polygons(polygons: Vec<Any>)
 
     let mut placement_queue = VecDeque::new();
 
-    for (i, mut p) in polygons.into_iter().enumerate() {
-        p.counterclockwise();
-
+    for (i, p) in polygons.into_iter().enumerate() {
         let node = Node::new((i as isize, p));
 
         ret.adopt(&node);
@@ -63,12 +61,12 @@ pub fn generate_tree_from_polygons(polygons: Vec<Any>)
     while !placement_queue.is_empty() {
         let to_place = placement_queue.pop_front().unwrap();
         let parent = to_place.parent().unwrap();
-        let brothers = parent.children();
+        let brothers = parent.children().clone();
 
         let brothers =
             brothers
                 .iter()
-                .filter(|child| Rc::ptr_eq(child, &to_place));
+                .filter(|child| !Rc::ptr_eq(child, &to_place));
 
         for brother in brothers {
             if brother.value().1.contains(&to_place.value().1) {

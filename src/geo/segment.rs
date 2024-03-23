@@ -19,18 +19,14 @@ impl Segment {
         Self { start, stop }
     }
 
-    pub fn is_strictly_secant_with(&self, rhs: &Self) -> bool
+    pub fn is_secant_with(&self, rhs: &Self) -> bool
     {
         let (a, b) = (*self).into();
         let (c, d) = (*rhs).into();
 
-        (are_ccw(&a, &c, &d) != are_ccw(&b, &c, &d)) &&
-            (are_ccw(&a, &b, &c) != are_ccw(&a, &b, &d))
-    }
-
-    pub fn is_secant_with(&self, rhs: &Self) -> bool
-    {
-        (self == rhs) || self.is_strictly_secant_with(rhs)
+        ((a == c) || (a == d) || (b == c) || (b == d)) ||
+            ((are_ccw(&a, &c, &d) != are_ccw(&b, &c, &d)) &&
+            (are_ccw(&a, &b, &c) != are_ccw(&a, &b, &d)))
     }
 
     pub fn length(&self) -> Unit { self.start.distance_from(&self.stop) }
@@ -198,19 +194,35 @@ mod tests
     }
 
     #[test]
+    fn test_is_secant_with_orthogonal()
+    {
+        let a = Segment::new(Point { x: 0., y: 1. }, Point { x: 0., y: 0. });
+        let b = Segment::new(Point { x: 0., y: 0. }, Point { x: 1., y: 0. });
+
+        assert!(a.is_secant_with(&b));
+    }
+
+    #[test]
+    fn test_is_secant_with_orthogonal_reversed()
+    {
+        let a = Segment::new(Point { x: 0., y: 1. }, Point { x: 0., y: 0. });
+        let b = Segment::new(Point { x: 0., y: 0. }, Point { x: -1., y: 0. });
+
+        assert!(a.is_secant_with(&b));
+    }
+
+    #[test]
     fn test_is_secant_with_non_secant()
     {
-        assert!(
-            !Segment::new(
-                Point { x: -1., y: -1. },
-                Point { x: 1., y: 1. }
-            ).is_secant_with(
-                &Segment::new(
-                    Point { x: -1., y: -3. },
-                    Point { x: -1., y: -1. }
-                )
-            )
-        );
+        let a = Segment::new(Point { x: -1., y: -1. }, Point { x: 1., y: 1. });
+
+        let b =
+            Segment::new(
+                Point { x: -1., y: -3. },
+                Point { x: -1., y: -1. }
+            );
+
+        assert!(a.is_secant_with(&b));
     }
 
     #[test]
@@ -227,15 +239,6 @@ mod tests
                 )
             )
         );
-    }
-
-    #[test]
-    fn test_is_secant_with_self()
-    {
-        let u = Segment::new(Point { x: -1., y: -1. },Point { x: 1., y: 1. });
-
-        assert!(u.is_secant_with(&u));
-        assert!(!u.is_strictly_secant_with(&u));
     }
 
     #[test]

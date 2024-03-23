@@ -18,6 +18,26 @@ pub struct Node<T>(RefCell<Cell<T>>);
 pub struct BFSIterator<T> { unexplored: VecDeque<Rc<Node<T>>> }
 
 impl<T> Node<T> {
+    pub fn abandon(&self, child: &Rc<Self>)
+    {
+        let index = child.borrow().index;
+
+        child.borrow_mut().parent = None;
+        self.borrow_mut().children.swap_remove(index);
+
+        let count = self.borrow().children.len();
+
+        if count != 0 {
+            let index = min(index, count - 1);
+
+            self
+                .borrow_mut()
+                .children[index]
+                .borrow_mut()
+                .index = index;
+        }
+    }
+
     pub fn above(&self, n: usize)
         -> Result<Rc<Self>, (usize, Option<Rc<Self>>)>
     {
@@ -73,30 +93,9 @@ impl<T> Node<T> {
         Ref::map(self.borrow(), |x| &x.children)
     }
 
-    pub fn detach(&self)
+    pub fn detach(self: &Rc<Self>)
     {
-        self.parent().map(
-            |parent| {
-                self.borrow_mut().parent = None;
-
-                parent
-                    .borrow_mut()
-                    .children
-                    .swap_remove(self.borrow().index);
-
-                let count = parent.borrow().children.len();
-
-                if count != 0 {
-                    let index = min(self.borrow().index, count - 1);
-
-                    parent
-                        .borrow_mut()
-                        .children[index]
-                        .borrow_mut()
-                        .index = index;
-                }
-            }
-        );
+        self.parent().map(|parent| parent.abandon(self));
     }
 
     pub fn is_leaf(&self) -> bool { self.borrow().children.is_empty() }
