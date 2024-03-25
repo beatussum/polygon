@@ -4,19 +4,35 @@ use super::are_ccw;
 
 use derive_more::{Display, Into};
 
+/**************/
+/* STRUCTURES */
+/**************/
+
 #[derive(Copy, Clone)]
 #[derive(Debug, Default, Into, PartialEq)]
 #[derive(Display)]
 #[display(fmt = "[{} ; {}]", start, stop)]
 pub struct Segment { start: Point, stop: Point }
 
+/*******************/
+/* IMPLEMENTATIONS */
+/*******************/
+
 impl Segment {
+    /****************/
+    /* CONSTRUCTORS */
+    /****************/
+
     pub fn new(start: Point, stop: Point) -> Self
     {
         assert_ne!(start, stop);
 
         Self { start, stop }
     }
+
+    /*************/
+    /* OPERATORS */
+    /*************/
 
     pub fn is_secant_with(&self, rhs: &Self) -> bool
     {
@@ -30,6 +46,10 @@ impl Segment {
 
     pub fn length(&self) -> Unit { self.start.distance_from(&self.stop) }
 }
+
+/***************/
+/* `Container` */
+/***************/
 
 impl Container for Segment {
     fn contains(&self, other: &Self) -> bool { self == other }
@@ -88,6 +108,26 @@ mod tests
 {
     use super::*;
 
+    /***********/
+    /* GETTERS */
+    /***********/
+
+    #[test]
+    fn test_length()
+    {
+        assert_eq!(
+            Segment::new(
+                Point { x: -2., y: -1. },
+                Point { x: 2., y: 2. }
+            ).length(),
+            5.
+        );
+    }
+
+    /***************/
+    /* `Container` */
+    /***************/
+
     #[test]
     fn test_contains()
     {
@@ -109,6 +149,10 @@ mod tests
             ).contains(&Point { x: 2., y: 2. })
         );
     }
+
+    /**************/
+    /* `Distance` */
+    /**************/
 
     #[test]
     fn test_distance_from_point_contained()
@@ -192,6 +236,10 @@ mod tests
         assert_eq!(u.distance_from(&u), 0.);
     }
 
+    /*************/
+    /* OPERATORS */
+    /*************/
+
     #[test]
     fn test_is_secant_with_orthogonal()
     {
@@ -237,18 +285,6 @@ mod tests
                     Point { x: -1., y: 1. }
                 )
             )
-        );
-    }
-
-    #[test]
-    fn test_length()
-    {
-        assert_eq!(
-            Segment::new(
-                Point { x: -2., y: -1. },
-                Point { x: 2., y: 2. }
-            ).length(),
-            5.
         );
     }
 }

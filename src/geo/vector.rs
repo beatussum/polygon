@@ -9,6 +9,10 @@ use symm_impl::symmetric;
 use std::ops::{Mul, MulAssign};
 use std::ops::{Div, DivAssign};
 
+/**************/
+/* STRUCTURES */
+/**************/
+
 #[derive(Copy, Clone)]
 #[derive(Debug)]
 #[derive(Display)]
@@ -24,7 +28,15 @@ pub struct ZeroNormError;
 #[display(fmt = "({} ; {})", x, y)]
 pub struct Vector { pub x: Unit, pub y: Unit }
 
+/*******************/
+/* IMPLEMENTATIONS */
+/*******************/
+
 impl Vector {
+    /*************/
+    /* OPERATORS */
+    /*************/
+
     pub fn det(self, rhs: &Self) -> Unit { self.x * rhs.y - self.y * rhs.x }
 
     pub fn dot(&self, rhs: &Self) -> Unit
@@ -41,6 +53,10 @@ impl Vector {
     {
         self.dot(rhs).abs() < Unit::EPSILON
     }
+
+    /***********/
+    /* GETTERS */
+    /***********/
 
     pub fn is_horizontal(&self) -> bool { self.y.abs() < Unit::EPSILON }
     pub fn is_vertical(&self) -> bool { self.x.abs() < Unit::EPSILON }
@@ -59,6 +75,10 @@ impl Vector {
         }
     }
 }
+
+/*************/
+/* OPERATORS */
+/*************/
 
 impl PartialEq for Vector {
     fn eq(&self, other: &Self) -> bool
@@ -102,6 +122,10 @@ impl DivAssign<Unit> for Vector {
         self.y /= rhs;
     }
 }
+
+/***************/
+/* CONVERSIONS */
+/***************/
 
 impl From<Point> for Vector {
     fn from(value: Point) -> Self { Self { x: value.x, y: value.y } }

@@ -3,12 +3,20 @@ use super::{Unit, Vector};
 
 use derive_more::{Display, Into, From};
 
+/**************/
+/* STRUCTURES */
+/**************/
+
 #[derive(Copy, Clone)]
 #[derive(From, Into)]
 #[derive(Debug, Default)]
 #[derive(Display)]
 #[display(fmt = "({} ; {})", x, y)]
 pub struct Point { pub x: Unit, pub y: Unit }
+
+/*******************/
+/* IMPLEMENTATIONS */
+/*******************/
 
 impl Distance for Point {
     fn squared_distance_from(&self, other: &Self) -> Unit {
@@ -39,6 +47,10 @@ mod tests
 {
     use super::*;
 
+    /**************/
+    /* `Distance` */
+    /**************/
+
     #[test]
     pub fn test_distance_from()
     {
@@ -47,6 +59,10 @@ mod tests
             2.
         );
     }
+
+    /*************/
+    /* OPERATORS */
+    /*************/
 
     #[test]
     pub fn test_eq_below_epsilon()

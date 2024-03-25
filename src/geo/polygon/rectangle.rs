@@ -3,14 +3,22 @@ use super::{Any, Polygon};
 use super::super::{Container, SVG};
 use super::super::{Point, Unit};
 
+/**************/
+/* STRUCTURES */
+/**************/
+
 #[derive(Clone, Copy)]
 #[derive(Debug, Default, PartialEq)]
 pub struct Rectangle { bottom_left: Point, top_right: Point }
 
+/*******************/
+/* IMPLEMENTATIONS */
+/*******************/
+
 impl Rectangle {
-    pub fn bottom_left(&self) -> Point { self.bottom_left }
-    pub fn is_square(&self) -> bool { self.height() == self.width() }
-    pub fn height(&self) -> Unit { self.top_right.y - self.bottom_left.y }
+    /****************/
+    /* CONSTRUCTORS */
+    /****************/
 
     pub fn new(bottom_left: Point, top_right: Point) -> Self
     {
@@ -18,6 +26,21 @@ impl Rectangle {
 
         Self { bottom_left, top_right }
     }
+
+    pub fn square(bottom_left: Point, side: Unit) -> Self
+    {
+        let (x, y) = bottom_left.into();
+
+        Self { bottom_left, top_right: Point { x: x + side, y: y + side } }
+    }
+
+    /***********/
+    /* GETTERS */
+    /***********/
+
+    pub fn bottom_left(&self) -> Point { self.bottom_left }
+    pub fn is_square(&self) -> bool { self.height() == self.width() }
+    pub fn height(&self) -> Unit { self.top_right.y - self.bottom_left.y }
 
     pub fn polygon(&self) -> Any
     {
@@ -32,13 +55,6 @@ impl Rectangle {
                 (xmin, ymax).into()
             ]
         }
-    }
-
-    pub fn square(bottom_left: Point, side: Unit) -> Self
-    {
-        let (x, y) = bottom_left.into();
-
-        Self { bottom_left, top_right: Point { x: x + side, y: y + side } }
     }
 
     pub fn top_right(&self) -> Point { self.top_right }

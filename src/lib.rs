@@ -6,6 +6,10 @@ use std::path::Path;
 pub mod geo;
 pub mod tree;
 
+/*************/
+/* FUNCTIONS */
+/*************/
+
 pub fn parse_from_string(str: &str) -> Vec<geo::polygon::Any>
 {
     str

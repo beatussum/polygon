@@ -20,6 +20,10 @@ use std::rc::Rc;
 
 pub type Unit = f64;
 
+/**********/
+/* TRAITS */
+/**********/
+
 pub trait Container<Other = Self>
 {
     fn contains(&self, other: &Other) -> bool;
@@ -36,6 +40,10 @@ pub trait Distance<Other = Self>
 }
 
 pub trait SVG { fn to_svg(&self) -> String; }
+
+/*************/
+/* FUNCTIONS */
+/*************/
 
 fn are_ccw(&a: &Point, &b: &Point, &c: &Point) -> bool
 {
@@ -79,6 +87,10 @@ pub fn generate_tree_from_polygons(polygons: Vec<Any>)
 
     ret
 }
+
+/*******************/
+/* IMPLEMENTATIONS */
+/*******************/
 
 #[symmetric]
 impl Distance<Point> for Segment {
