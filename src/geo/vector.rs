@@ -6,6 +6,7 @@ use derive_more::{Display, Into, From, Neg, Sum};
 
 use symm_impl::symmetric;
 
+use std::error::Error;
 use std::ops::{Mul, MulAssign};
 use std::ops::{Div, DivAssign};
 
@@ -75,6 +76,8 @@ impl Vector {
         }
     }
 }
+
+impl Error for ZeroNormError {}
 
 /*************/
 /* OPERATORS */
