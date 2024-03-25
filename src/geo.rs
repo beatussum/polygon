@@ -13,8 +13,6 @@ pub use vector::Vector;
 use polygon::Any;
 use super::tree::Node;
 
-use symm_impl::symmetric;
-
 use std::collections::VecDeque;
 use std::rc::Rc;
 
@@ -86,39 +84,6 @@ pub fn generate_tree_from_polygons(polygons: Vec<Any>)
     }
 
     ret
-}
-
-/*******************/
-/* IMPLEMENTATIONS */
-/*******************/
-
-#[symmetric]
-impl Distance<Point> for Segment {
-    fn squared_distance_from(&self, other: &Point) -> Unit
-    {
-        let (start, stop) = (*self).into();
-
-        if self.contains(other) {
-            0.
-        } else {
-            let projection =
-                Vector::from((start, *other))
-                .dot(&(*self).into());
-
-            let oh =
-                Vector::from((Point::default(), start)) +
-                (projection / Vector::from(*self).squared_norm()) *
-                Vector::from(*self);
-
-            if self.contains(&Point::from(oh)) {
-                (oh - (*other).into()).squared_norm()
-            } else if projection < 0. {
-                start.squared_distance_from(other)
-            } else {
-                stop.squared_distance_from(other)
-            }
-        }
-    }
 }
 
 #[cfg(test)]

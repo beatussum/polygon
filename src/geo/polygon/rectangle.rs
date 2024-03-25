@@ -111,8 +111,8 @@ mod tests
             Rectangle {
                 bottom_left: Point { x: -1., y: -1. },
                 top_right: Point { x: 2., y: 1. }
-            }.to_svg();
+            };
 
-        assert_eq!(expected, testing);
+        assert_eq!(testing.to_svg(), expected);
     }
 }

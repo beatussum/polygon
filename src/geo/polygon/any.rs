@@ -216,31 +216,35 @@ mod tests
     #[test]
     fn test_is_valid()
     {
-        assert!(
+        let testing =
             Any {
                 points: vec! [
                     Point { x: -1., y: 0. },
                     Point { x: 0., y: 1. },
                     Point { x: 1., y: 0. }
                 ]
-            }.is_valid()
-        );
+            };
+
+        assert!(testing.is_valid());
     }
 
     #[test]
     fn test_is_not_valid_not_distinct()
     {
-        assert!(
-            !Any {
+        let testing =
+            Any {
                 points: vec! [Point::default(), Point::default()]
-            }.is_valid()
-        );
+            };
+
+        assert!(!testing.is_valid());
     }
 
     #[test]
     fn test_is_not_valid_not_enough()
     {
-        assert!(!Any { points: vec! [Point::default()] }.is_valid());
+        let testing = Any { points: vec! [Point::default()] };
+
+        assert!(!testing.is_valid());
     }
 
     #[test]
@@ -253,9 +257,9 @@ mod tests
                     Point { x: 0., y: 1. },
                     Point { x: 1., y: 0. }
                 ]
-            }.area();
+            };
 
-        assert_eq!(testing, 1.)
+        assert_eq!(testing.area(), 1.)
     }
 
     #[test]
@@ -274,9 +278,9 @@ mod tests
                     Point { x: 0., y: 1. },
                     Point { x: 1., y: 0. }
                 ]
-            }.frame();
+            };
 
-        assert_eq!(expected, testing);
+        assert_eq!(testing.frame(), expected);
     }
 
     /*********/
@@ -286,6 +290,8 @@ mod tests
     #[test]
     fn test_get_svg()
     {
+        let expected = r#"<polygon points="-1,0 0,1 1,0" />"#;
+
         let testing =
             Any {
                 points: vec! [
@@ -293,9 +299,9 @@ mod tests
                     Point { x: 0., y: 1. },
                     Point { x: 1., y: 0. }
                 ]
-            }.to_svg();
+            };
 
-        assert_eq!(testing, r#"<polygon points="-1,0 0,1 1,0" />"#);
+        assert_eq!(testing.to_svg(), expected);
     }
 
     /***************/
@@ -307,7 +313,7 @@ mod tests
     {
         let point = Point { x: -1., y: 0. };
 
-        let poly =
+        let polygon =
             Any {
                 points: vec! [
                     Point { x: 1., y: 0. },
@@ -316,7 +322,7 @@ mod tests
                 ]
             };
 
-        assert!(!poly.contains(&point));
+        assert!(!polygon.contains(&point));
     }
 
     #[test]
@@ -324,7 +330,7 @@ mod tests
     {
         let point = Point::default();
 
-        let poly =
+        let polygon =
             Any {
                 points: vec! [
                     Point { x: 1., y: 0. },
@@ -333,7 +339,7 @@ mod tests
                 ]
             };
 
-        assert!(!poly.contains(&point));
+        assert!(!polygon.contains(&point));
     }
 
     #[test]
@@ -341,7 +347,7 @@ mod tests
     {
         let point = Point { x: 1., y: -1. };
 
-        let poly =
+        let polygon =
             Any {
                 points: vec! [
                     Point { x: 3., y: 0. },
@@ -350,7 +356,7 @@ mod tests
                 ]
             };
 
-        assert!(!poly.contains(&point));
+        assert!(!polygon.contains(&point));
     }
 
     #[test]
@@ -358,7 +364,7 @@ mod tests
     {
         let point = Point { x: 10., y: 10. };
 
-        let poly =
+        let polygon =
             Any {
                 points: vec! [
                     Point { x: 1., y: 0. },
@@ -367,7 +373,7 @@ mod tests
                 ]
             };
 
-        assert!(!poly.contains(&point));
+        assert!(!polygon.contains(&point));
     }
 
     #[test]
@@ -375,7 +381,7 @@ mod tests
     {
         let point = Point { x: 1., y: -1. };
 
-        let poly =
+        let polygon =
             Any {
                 points: vec! [
                     Point { x: 1., y: 0. },
@@ -384,7 +390,7 @@ mod tests
                 ]
             };
 
-        assert!(!poly.contains(&point));
+        assert!(!polygon.contains(&point));
     }
 
     #[test]
@@ -392,7 +398,7 @@ mod tests
     {
         let point = Point { x: 0., y: -1. };
 
-        let poly =
+        let polygon =
             Any {
                 points: vec! [
                     Point { x: 0., y: 0. },
@@ -409,7 +415,7 @@ mod tests
                 ]
             };
 
-        assert!(!poly.contains(&point));
+        assert!(!polygon.contains(&point));
     }
 
     #[test]
@@ -417,7 +423,7 @@ mod tests
     {
         let point = Point { x: 0., y: -1. };
 
-        let poly =
+        let polygon =
             Any {
                 points: vec! [
                     Point { x: 1., y: 0. },
@@ -426,7 +432,7 @@ mod tests
                 ]
             };
 
-        assert!(!poly.contains(&point));
+        assert!(!polygon.contains(&point));
     }
 
     #[test]
@@ -434,7 +440,7 @@ mod tests
     {
         let point = Point { x: 0., y: -1. };
 
-        let poly =
+        let polygon =
             Any {
                 points: vec! [
                     Point { x: 0., y: 1. },
@@ -443,7 +449,7 @@ mod tests
                 ]
             };
 
-        assert!(!poly.contains(&point));
+        assert!(!polygon.contains(&point));
     }
 
     #[test]
@@ -451,7 +457,7 @@ mod tests
     {
         let point = Point { x: 0., y: 0.5 };
 
-        let poly =
+        let polygon =
             Any {
                 points: vec! [
                     Point { x: 1., y: 0. },
@@ -460,7 +466,7 @@ mod tests
                 ]
             };
 
-        assert!(poly.contains(&point));
+        assert!(polygon.contains(&point));
     }
 
     #[test]
@@ -468,7 +474,7 @@ mod tests
     {
         let point = Point { x: 1., y: 0.5 };
 
-        let poly =
+        let polygon =
             Any {
                 points: vec! [
                     Point { x: 0., y: 0. },
@@ -480,6 +486,6 @@ mod tests
                 ]
             };
 
-        assert!(poly.contains(&point));
+        assert!(polygon.contains(&point));
     }
 }

@@ -195,39 +195,50 @@ mod tests
     #[test]
     fn test_is_vertical()
     {
-        assert!(Vector { x: 0., y: 1. }.is_vertical());
+        let testing = Vector { x: 0., y: 1. };
+
+        assert!(testing.is_vertical());
     }
 
     #[test]
     fn test_is_not_vertical()
     {
-        assert!(!Vector { x: 1., y: 1. }.is_vertical());
+        let testing = Vector { x: 1., y: 0. };
+
+        assert!(!testing.is_vertical());
     }
 
     #[test]
     fn test_is_horizontal()
     {
-        assert!(Vector { x: 1., y: 0. }.is_horizontal());
+        let testing = Vector { x: 1., y: 0. };
+
+        assert!(testing.is_horizontal());
     }
 
     #[test]
     fn test_is_not_horizontal()
     {
-        assert!(!Vector { x: 1., y: 1. }.is_horizontal());
+        let testing = Vector { x: 1., y: 1. };
+
+        assert!(!testing.is_horizontal());
     }
 
     #[test]
     fn test_norm()
     {
-        assert_eq!(Vector { x: 2., y: 0. }.norm(), 2.);
+        let testing = Vector { x: 2., y: 0. };
+
+        assert_eq!(testing.norm(), 2.);
     }
 
     #[test]
     fn test_unit()
     {
-        let diff = (Vector { x: 4., y: 2. }.unit().unwrap().norm() - 1.).abs();
+        let testing = Vector { x: 4., y: 2. };
+        let testing = (testing.unit().unwrap().norm() - 1.).abs();
 
-        assert!(diff < Unit::EPSILON);
+        assert!(testing < Unit::EPSILON);
     }
 
     #[test]
@@ -237,27 +248,27 @@ mod tests
     #[test]
     fn test_eq_below_epsilon()
     {
-        assert_eq!(
-            Vector { x: 0., y: 1. },
-            Vector { x: Unit::EPSILON / 10., y: 1. }
-        );
+        let a = Vector { x: 0., y: 1. };
+        let b = Vector { x: Unit::EPSILON / 10., y: 1. };
+
+        assert_eq!(a, b);
     }
 
     #[test]
     fn test_eq_epsilon()
     {
-        assert_ne!(
-            Vector { x: 0., y: 1. },
-            Vector { x: Unit::EPSILON, y: 1. }
-        );
+        let a = Vector { x: 0., y: 1. };
+        let b = Vector { x: Unit::EPSILON, y: 1. };
+
+        assert_ne!(a, b);
     }
 
     #[test]
     fn test_eq_above_epsilon()
     {
-        assert_ne!(
-            Vector { x: 0., y: 1. },
-            Vector { x: Unit::EPSILON * 10., y: 1. }
-        );
+        let a = Vector { x: 0., y: 1. };
+        let b = Vector { x: Unit::EPSILON * 10., y: 1. };
+
+        assert_ne!(a, b);
     }
 }

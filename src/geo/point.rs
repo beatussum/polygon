@@ -54,10 +54,10 @@ mod tests
     #[test]
     pub fn test_distance_from()
     {
-        assert_eq!(
-            Point { x: 0., y: -1. }.distance_from(&Point { x: 0., y: 1. }),
-            2.
-        );
+        let a = Point { x: 0., y: -1. };
+        let b = Point { x: 0., y: 1. };
+
+        assert_eq!(a.distance_from(&b), 2.);
     }
 
     /*************/
@@ -67,18 +67,24 @@ mod tests
     #[test]
     pub fn test_eq_below_epsilon()
     {
-        assert_eq!(Point::default(), Point { x: 0., y: Unit::EPSILON / 10. });
+        let testing = Point { x: 0., y: Unit::EPSILON / 10. };
+
+        assert_eq!(testing, Point::default());
     }
 
     #[test]
     pub fn test_eq_epsilon()
     {
-        assert_ne!(Point::default(), Point { x: 0., y: Unit::EPSILON });
+        let testing = Point { x: 0., y: Unit::EPSILON };
+
+        assert_ne!(testing, Point::default());
     }
 
     #[test]
     pub fn test_eq_above_epsilon()
     {
-        assert_ne!(Point::default(), Point { x: 0., y: Unit::EPSILON * 10. });
+        let testing = Point { x: 0., y: Unit::EPSILON * 10. };
+
+        assert_ne!(testing, Point::default());
     }
 }

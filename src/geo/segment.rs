@@ -1,8 +1,9 @@
 use super::{Container, Distance, SVG};
-use super::{Point, Unit};
+use super::{Point, Unit, Vector};
 use super::are_ccw;
 
 use derive_more::{Display, Into};
+use symm_impl::symmetric;
 
 /**************/
 /* STRUCTURES */
@@ -47,6 +48,19 @@ impl Segment {
     pub fn length(&self) -> Unit { self.start.distance_from(&self.stop) }
 }
 
+impl SVG for Segment {
+    fn to_svg(&self) -> String
+    {
+        format!(
+            r#"<line x1="{}" y1="{}" x2="{}" y2="{}""#,
+            self.start.x,
+            self.start.y,
+            self.stop.x,
+            self.stop.y
+        )
+    }
+}
+
 /***************/
 /* `Container` */
 /***************/
@@ -65,6 +79,10 @@ impl Container<Point> for Segment {
         (dist - self.length()).abs() < Unit::EPSILON
     }
 }
+
+/**************/
+/* `Distance` */
+/**************/
 
 impl Distance for Segment {
     fn squared_distance_from(&self, other: &Self) -> Unit
@@ -90,16 +108,32 @@ impl Distance for Segment {
     }
 }
 
-impl SVG for Segment {
-    fn to_svg(&self) -> String
+#[symmetric]
+impl Distance<Point> for Segment {
+    fn squared_distance_from(&self, other: &Point) -> Unit
     {
-        format!(
-            r#"<line x1="{}" y1="{}" x2="{}" y2="{}""#,
-            self.start.x,
-            self.start.y,
-            self.stop.x,
-            self.stop.y
-        )
+        let (start, stop) = (*self).into();
+
+        if self.contains(other) {
+            0.
+        } else {
+            let projection =
+                Vector::from((start, *other))
+                .dot(&(*self).into());
+
+            let oh =
+                Vector::from((Point::default(), start)) +
+                (projection / Vector::from(*self).squared_norm()) *
+                Vector::from(*self);
+
+            if self.contains(&Point::from(oh)) {
+                (oh - (*other).into()).squared_norm()
+            } else if projection < 0. {
+                start.squared_distance_from(other)
+            } else {
+                stop.squared_distance_from(other)
+            }
+        }
     }
 }
 
@@ -115,13 +149,13 @@ mod tests
     #[test]
     fn test_length()
     {
-        assert_eq!(
+        let testing =
             Segment::new(
                 Point { x: -2., y: -1. },
                 Point { x: 2., y: 2. }
-            ).length(),
-            5.
-        );
+            );
+
+        assert_eq!(testing.length(), 5.);
     }
 
     /***************/
@@ -131,23 +165,29 @@ mod tests
     #[test]
     fn test_contains()
     {
-        assert!(
+        let point = Point::default();
+
+        let segment =
             Segment::new(
                 Point { x: -1., y: -1. },
                 Point { x: 1., y: 1. }
-            ).contains(&Point::default())
-        );
+            );
+
+        assert!(segment.contains(&point));
     }
 
     #[test]
     fn test_not_contains()
     {
-        assert!(
-            !Segment::new(
+        let point = Point { x: 2., y: 2. };
+
+        let segment =
+            Segment::new(
                 Point { x: -1., y: -1. },
                 Point { x: 1., y: 1. }
-            ).contains(&Point { x: 2., y: 2. })
-        );
+            );
+
+        assert!(!segment.contains(&point));
     }
 
     /**************/
@@ -157,71 +197,79 @@ mod tests
     #[test]
     fn test_distance_from_point_contained()
     {
-        assert_eq!(
+        let point = Point::default();
+
+        let segment =
             Segment::new(
                 Point { x: -1., y: -1. },
                 Point { x: 1., y: 1. }
-            ).distance_from(&Point::default()),
-            0.
-        );
+            );
+
+        assert_eq!(segment.distance_from(&point), 0.);
     }
 
     #[test]
     fn test_distance_from_point_in()
     {
-        assert_eq!(
+        let point = Point { x: -1., y: 1. };
+
+        let segment =
             Segment::new(
                 Point { x: -1., y: -1. },
                 Point { x: 1., y: 1. }
-            ).distance_from(&Point { x: -1., y: 1. }),
-            2_f64.sqrt()
-        );
+            );
+
+        assert_eq!(segment.distance_from(&point), Unit::from(2.).sqrt());
     }
 
     #[test]
     fn test_distance_from_point_out()
     {
-        assert_eq!(
+        let point = Point { x: -1., y: 0. };
+
+        let segment =
             Segment::new(
                 Point::default(),
                 Point { x: 1., y: 1. }
-            ).distance_from(&Point { x: -1., y: 0. }),
-            1.
-        );
+            );
+
+        assert_eq!(segment.distance_from(&point), 1.);
     }
 
     #[test]
     fn test_distance_from_segment_non_secant()
     {
-        assert_eq!(
+        let a =
             Segment::new(
                 Point::default(),
                 Point { x: 1., y: 1. }
-            ).distance_from(
-                &Segment::new(
-                    Point { x: 4., y: 5. },
-                    Point { x: 3., y: 7. }
-                )
-            ),
-            5.
-        );
+            );
+
+        let b =
+            Segment::new(
+                Point { x: 4., y: 5. },
+                Point { x: 3., y: 7. }
+            );
+
+        assert_eq!(a.distance_from(&b), 5.);
     }
 
     #[test]
     fn test_distance_from_segment_secant()
     {
-        assert_eq!(
+        let a =
             Segment::new(
                 Point { x: -1., y: -1. },
                 Point { x: 1., y: 1. }
-            ).distance_from(
-                &Segment::new(
-                    Point { x: -1., y: 1. },
-                    Point { x: 1., y: -1. }
-                )
-            ),
-            0.
-        );
+            );
+
+        let b =
+            Segment::new(
+                Point { x: -1., y: 1. },
+                Point { x: 1., y: -1. }
+            );
+
+        assert_eq!(a.distance_from(&b), 0.);
     }
 
     #[test]
@@ -275,16 +323,18 @@ mod tests
     #[test]
     fn test_is_secant_with_secant()
     {
-        assert!(
+        let a =
             Segment::new(
                 Point { x: -1., y: -1. },
                 Point { x: 1., y: 1. }
-            ).is_secant_with(
-                &Segment::new(
-                    Point { x: 1., y: -1. },
-                    Point { x: -1., y: 1. }
-                )
-            )
-        );
+            );
+
+        let b =
+            Segment::new(
+                Point { x: 1., y: -1. },
+                Point { x: -1., y: 1. }
+            );
+
+        assert!(a.is_secant_with(&b));
     }
 }
