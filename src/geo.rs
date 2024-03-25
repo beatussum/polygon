@@ -18,7 +18,6 @@ use symm_impl::symmetric;
 use std::collections::VecDeque;
 use std::rc::Rc;
 
-const EPSILON: f32 = 1e-5;
 pub type Unit = f32;
 
 pub trait Container<Other = Self>

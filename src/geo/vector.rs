@@ -1,5 +1,4 @@
 use super::{Point, Segment, Unit};
-use super::EPSILON;
 
 use derive_more::{Add, AddAssign};
 use derive_more::{Sub, SubAssign};
@@ -35,16 +34,16 @@ impl Vector {
 
     pub fn is_collinear_with(&self, rhs: &Self) -> bool
     {
-        self.det(rhs).abs() < EPSILON
+        self.det(rhs).abs() < Unit::EPSILON
     }
 
     pub fn is_orthogonal_to(&self, rhs: &Self) -> bool
     {
-        self.dot(rhs).abs() < EPSILON
+        self.dot(rhs).abs() < Unit::EPSILON
     }
 
-    pub fn is_horizontal(&self) -> bool { self.y.abs() < EPSILON }
-    pub fn is_vertical(&self) -> bool { self.x.abs() < EPSILON }
+    pub fn is_horizontal(&self) -> bool { self.y.abs() < Unit::EPSILON }
+    pub fn is_vertical(&self) -> bool { self.x.abs() < Unit::EPSILON }
 
     pub fn squared_norm(&self) -> Unit { self.x.powi(2) + self.y.powi(2) }
     pub fn norm(&self) -> Unit { self.squared_norm().sqrt() }
@@ -65,7 +64,7 @@ impl PartialEq for Vector {
     fn eq(&self, other: &Self) -> bool
     {
         self.is_collinear_with(other) &&
-            ((*self - *other).squared_norm() < EPSILON)
+            ((*self - *other).squared_norm() < Unit::EPSILON)
     }
 }
 
@@ -204,7 +203,7 @@ mod tests
     {
         let diff = (Vector { x: 4., y: 2. }.unit().unwrap().norm() - 1.).abs();
 
-        assert!(diff < EPSILON);
+        assert!(diff < Unit::EPSILON);
     }
 
     #[test]
@@ -216,7 +215,7 @@ mod tests
     {
         assert_eq!(
             Vector { x: 0., y: 1. },
-            Vector { x: EPSILON / 10., y: 1. }
+            Vector { x: Unit::EPSILON / 10., y: 1. }
         );
     }
 
@@ -225,7 +224,7 @@ mod tests
     {
         assert_ne!(
             Vector { x: 0., y: 1. },
-            Vector { x: EPSILON, y: 1. }
+            Vector { x: Unit::EPSILON, y: 1. }
         );
     }
 
@@ -234,7 +233,7 @@ mod tests
     {
         assert_ne!(
             Vector { x: 0., y: 1. },
-            Vector { x: EPSILON * 10., y: 1. }
+            Vector { x: Unit::EPSILON * 10., y: 1. }
         );
     }
 }

@@ -1,7 +1,6 @@
 use super::{Container, Distance, SVG};
 use super::{Point, Unit};
 use super::are_ccw;
-use super::EPSILON;
 
 use derive_more::{Display, Into};
 
@@ -43,7 +42,7 @@ impl Container<Point> for Segment {
             self.start.distance_from(point) +
             self.stop.distance_from(point);
 
-        (dist - self.length()).abs() < EPSILON
+        (dist - self.length()).abs() < Unit::EPSILON
     }
 }
 

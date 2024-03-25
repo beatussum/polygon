@@ -1,6 +1,5 @@
 use super::{Distance, SVG};
 use super::{Unit, Vector};
-use super::EPSILON;
 
 use derive_more::{Display, Into, From};
 
@@ -25,7 +24,10 @@ impl SVG for Point {
 }
 
 impl PartialEq for Point {
-    fn eq(&self, other: &Self) -> bool { self.distance_from(other) < EPSILON }
+    fn eq(&self, other: &Self) -> bool
+    {
+        self.distance_from(other) < Unit::EPSILON
+    }
 }
 
 impl From<Vector> for Point {
@@ -49,18 +51,18 @@ mod tests
     #[test]
     pub fn test_eq_below_epsilon()
     {
-        assert_eq!(Point::default(), Point { x: 0., y: EPSILON / 10. });
+        assert_eq!(Point::default(), Point { x: 0., y: Unit::EPSILON / 10. });
     }
 
     #[test]
     pub fn test_eq_epsilon()
     {
-        assert_ne!(Point::default(), Point { x: 0., y: EPSILON });
+        assert_ne!(Point::default(), Point { x: 0., y: Unit::EPSILON });
     }
 
     #[test]
     pub fn test_eq_above_epsilon()
     {
-        assert_ne!(Point::default(), Point { x: 0., y: EPSILON * 10. });
+        assert_ne!(Point::default(), Point { x: 0., y: Unit::EPSILON * 10. });
     }
 }
