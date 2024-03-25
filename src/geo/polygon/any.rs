@@ -9,6 +9,8 @@ use std::iter::once;
 pub struct Any { pub points: Vec<Point> }
 
 impl Any {
+    pub fn len(&self) -> usize { self.points.len() }
+
     pub fn pairs_of_points(&self)
         -> impl Clone + Iterator<Item = (&Point, &Point)>
     {
@@ -39,7 +41,7 @@ impl Any {
 
     pub fn segments(&self) -> impl Clone + Iterator<Item = Segment> + '_
     {
-        (0..self.points.len()).map(|index| self.segment(index))
+        (0..self.len()).map(|index| self.segment(index))
     }
 }
 
