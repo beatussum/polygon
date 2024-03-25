@@ -28,8 +28,6 @@ impl Any {
         self.points.iter()
     }
 
-    pub fn revert(&mut self) { self.points.reverse(); }
-
     pub fn segment(&self, index: usize) -> Segment
     {
         let next =
@@ -65,50 +63,52 @@ impl Container<Point> for Any {
         let y = self.frame().top_right().y;
 
         if other.y >= y {
-            return false;
-        }
+            false
+        } else {
+            let last = (self.segment(self.len() - 1), self.segment(0));
+            let point = (other.x, y).into();
+            let u = Segment::new(other, point);
 
-        let point = (other.x, y).into();
-        let u = Segment::new(other, point);
-
-        let count =
-            self
-                .pairs_of_segments()
-                .chain(once((self.segment(self.points.len() - 1), self.segment(0))))
-                .map(
-                    |(a, b)| {
-                        if a.is_secant_with(&u) {
-                            if b.is_secant_with(&u) {
-                                let a: Vector = a.into();
-                                let b: Vector = b.into();
-                                let u: Vector = u.into();
+            let count =
+                self
+                    .pairs_of_segments()
+                    .chain(once(last))
+                    .map(
+                        |(a, b)| {
+                            if a.is_secant_with(&u) {
+                                if b.is_secant_with(&u) {
+                                    let a: Vector = a.into();
+                                    let b: Vector = b.into();
+                                    let u: Vector = u.into();
 
 
-                                if same_sign(u.det(&a), u.det(&b)) {
-                                    // Counting 0 instead of 1 because the
-                                    // intersection will be counted with the
-                                    // next segment pair.
+                                    if same_sign(u.det(&a), u.det(&b)) {
+                                        // Counting 0 instead of 1 because the
+                                        // intersection will be counted with
+                                        // the next segment pair.
 
-                                    0
+                                        0
+                                    } else {
+                                        // Counting 1 instead of 0 allowing the
+                                        // intersection to be counted twice,
+                                        // (once here, once with the next
+                                        // segment pair) which is the same as
+                                        // not being counted at all.
+
+                                        1
+                                    }
                                 } else {
-                                    // Counting 1 instead of 0 allowing the
-                                    // intersection to be counted twice, (once
-                                    // here, once with the next segment pair)
-                                    // which is the same as not being counted at all.
-
                                     1
                                 }
                             } else {
-                                1
+                                0
                             }
-                        } else {
-                            0
                         }
-                    }
-                )
-                .sum::<usize>();
+                    )
+                    .sum::<usize>();
 
-        (count % 2) == 1
+            (count % 2) == 1
+        }
     }
 }
 
@@ -341,7 +341,7 @@ mod tests
     }
 
     #[test]
-    fn test_contains_outside_pass_by_three_segments()
+    fn test_contains_outside_pass_by_several_segments()
     {
         let point = Point { x: 0., y: -1. };
 
@@ -352,24 +352,12 @@ mod tests
                     Point { x: 0., y: 1. },
                     Point { x: 0., y: 2. },
                     Point { x: 0., y: 3. },
-                    Point { x: -1., y: 0. }
-                ]
-            };
-
-        assert!(!poly.contains(&point));
-    }
-
-    #[test]
-    fn test_contains_outside_pass_by_two_segments()
-    {
-        let point = Point { x: 0., y: -1. };
-
-        let poly =
-            Any {
-                points: vec! [
-                    Point { x: 0., y: 0. },
-                    Point { x: 0., y: 1. },
-                    Point { x: 0., y: 2. },
+                    Point { x: 0., y: 4. },
+                    Point { x: 0., y: 5. },
+                    Point { x: 0., y: 6. },
+                    Point { x: 0., y: 7. },
+                    Point { x: 0., y: 8. },
+                    Point { x: 0., y: 9. },
                     Point { x: -1., y: 0. }
                 ]
             };
