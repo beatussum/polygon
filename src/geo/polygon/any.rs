@@ -9,8 +9,6 @@ use std::iter::once;
 pub struct Any { pub points: Vec<Point> }
 
 impl Any {
-    pub fn len(&self) -> usize { self.points.len() }
-
     pub fn pairs_of_points(&self)
         -> impl Clone + Iterator<Item = (&Point, &Point)>
     {
@@ -113,6 +111,8 @@ impl Container<Point> for Any {
 }
 
 impl Polygon for Any {
+    fn len(&self) -> usize { self.points.len() }
+
     fn is_valid(&self) -> bool
     {
         if self.points.len() > 2 {

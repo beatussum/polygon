@@ -59,6 +59,7 @@ impl Container for Rectangle {
 }
 
 impl Polygon for Rectangle {
+    fn len(&self) -> usize { 4 }
     fn area(&self) -> Unit { self.height() * self.width() }
     fn frame(&self) -> Rectangle { *self }
     fn is_valid(&self) -> bool { true }

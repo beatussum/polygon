@@ -10,6 +10,7 @@ pub use rectangle::Rectangle;
 pub trait Polygon: SVG
 {
     fn area(&self) -> Unit;
+    fn len(&self) -> usize;
     fn is_valid(&self) -> bool;
     fn frame(&self) -> Rectangle;
 }
