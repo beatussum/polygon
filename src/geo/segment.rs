@@ -130,7 +130,7 @@ mod tests
                 Point { x: -1., y: -1. },
                 Point { x: 1., y: 1. }
             ).distance_from(&Point { x: -1., y: 1. }),
-            2_f32.sqrt()
+            2_f64.sqrt()
         );
     }
 

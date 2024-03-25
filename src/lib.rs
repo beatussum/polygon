@@ -21,7 +21,7 @@ pub fn parse_from_string(str: &str) -> Vec<geo::polygon::Any>
         .map(
             |(p, x, y)| {
                 (
-                    p.parse::<u8>().unwrap(),
+                    p.parse::<u16>().unwrap(),
                     x.parse::<geo::Unit>().unwrap(),
                     y.parse::<geo::Unit>().unwrap()
                 )

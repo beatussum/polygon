@@ -18,7 +18,7 @@ use symm_impl::symmetric;
 use std::collections::VecDeque;
 use std::rc::Rc;
 
-pub type Unit = f32;
+pub type Unit = f64;
 
 pub trait Container<Other = Self>
 {
