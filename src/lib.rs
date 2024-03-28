@@ -1,7 +1,11 @@
+use geo::polygon::Any;
+use tree::Node;
+
 use itertools::Itertools;
 
 use std::fs;
 use std::path::Path;
+use std::rc::Rc;
 
 pub mod geo;
 pub mod tree;
@@ -10,7 +14,7 @@ pub mod tree;
 /* FUNCTIONS */
 /*************/
 
-pub fn parse_from_string(str: &str) -> Vec<geo::polygon::Any>
+pub fn parse_from_string(str: &str) -> Vec<Rc<Node<(isize, Any)>>>
 {
     str
         .lines()
@@ -39,10 +43,12 @@ pub fn parse_from_string(str: &str) -> Vec<geo::polygon::Any>
             }
         )
         .map(|points| geo::polygon::Any { points })
+        .enumerate()
+        .map(|(i, polygon)| Node::new((i as isize, polygon)))
         .collect()
 }
 
-pub fn parse_from_file(path: &Path) -> Vec<geo::polygon::Any>
+pub fn parse_from_file(path: &Path) -> Vec<Rc<Node<(isize, Any)>>>
 {
     parse_from_string(&fs::read_to_string(path).unwrap())
 }
@@ -109,6 +115,8 @@ mod tests
             }
         ];
 
-        assert_eq!(parse_from_string(testing), expected);
+        for (t, e) in parse_from_string(testing).into_iter().zip(expected) {
+            assert_eq!(t.value().1, e);
+        }
     }
 }

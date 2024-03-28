@@ -49,17 +49,15 @@ fn are_ccw(&a: &Point, &b: &Point, &c: &Point) -> bool
 }
 
 #[cfg(feature = "naive")]
-pub fn generate_tree_from_polygons(polygons: Vec<Any>)
+pub fn generate_tree_from_polygons(nodes: &Vec<Rc<Node<(isize, Any)>>>)
     -> Rc<Node<(isize, Any)>>
 {
     let ret = Node::new((-1, Any::default()));
 
     let mut placement_queue = VecDeque::new();
 
-    for (i, p) in polygons.into_iter().enumerate() {
-        let node = Node::new((i as isize, p));
-
-        ret.adopt(&node);
+    for node in nodes {
+        ret.adopt(node);
         placement_queue.push_back(node);
     }
 
