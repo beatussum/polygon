@@ -12,6 +12,7 @@ pub use vector::Vector;
 
 use super::tree::Node;
 use super::{IndexedNode, IndexedNodes};
+#[cfg(feature = "frames")] use polygon::Any;
 
 use std::collections::VecDeque;
 use std::rc::Rc;
@@ -147,17 +148,19 @@ pub fn generate_tree_from_polygons(nodes: &IndexedNodes) -> IndexedNode
         if !parent.value().1.contains(child) {
             node.upgrade();
 
-            let new_parent = node.parent().unwrap();
-            let children = new_parent.children();
-
-            let mut brothers =
-                children
+            let brothers =
+                node
+                    .parent()
+                    .unwrap()
+                    .children()
                     .iter()
                     .filter(|brother| !Rc::ptr_eq(brother, &node))
                     .filter(|brother| !Rc::ptr_eq(brother, &parent))
-                    .filter(|brother| brother.value().1.contains(child));
+                    .filter(|brother| brother.value().1.contains(child))
+                    .cloned()
+                    .next();
 
-            match brothers.next() {
+            match brothers {
                 Some(brother) => brother.adopt(&node),
                 None => ()
             }
