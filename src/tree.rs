@@ -3,6 +3,10 @@ use std::cmp::min;
 use std::collections::VecDeque;
 use std::rc::{Rc, Weak};
 
+/**************/
+/* STRUCTURES */
+/**************/
+
 #[derive(Clone, Debug)]
 pub struct Node<T>
 {
@@ -14,7 +18,31 @@ pub struct Node<T>
 
 pub struct BFSIterator<T> { unexplored: VecDeque<Rc<Node<T>>> }
 
+/*******************/
+/* IMPLEMENTATIONS */
+/*******************/
+
 impl<T> Node<T> {
+    /****************/
+    /* CONSTRUCTORS */
+    /****************/
+
+    pub fn new(value: T) -> Rc<Self>
+    {
+        Rc::new(
+            Node {
+                children: RefCell::new(Vec::new()),
+                index: RefCell::new(usize::default()),
+                parent: RefCell::new(None),
+                value: RefCell::new(value)
+            }
+        )
+    }
+
+    /***********/
+    /* ACTIONS */
+    /***********/
+
     pub fn abandon(&self, child: &Rc<Self>)
     {
         let index = *child.index.borrow();
@@ -34,6 +62,26 @@ impl<T> Node<T> {
                 .borrow_mut() = index;
         }
     }
+
+    pub fn adopt(self: &Rc<Self>, child: &Rc<Self>) { child.attach(self); }
+
+    pub fn attach(self: &Rc<Self>, parent: &Rc<Self>)
+    {
+        self.detach();
+
+        *self.index.borrow_mut() = parent.children.borrow().len();
+        *self.parent.borrow_mut() = Some(Rc::downgrade(&parent));
+        parent.children.borrow_mut().push(self.clone());
+    }
+
+    pub fn detach(self: &Rc<Self>)
+    {
+        self.parent().map(|parent| parent.abandon(self));
+    }
+
+    /***********************/
+    /* GETTERS AND SETTERS */
+    /***********************/
 
     pub fn above(&self, n: usize)
         -> Result<Rc<Self>, (usize, Option<Rc<Self>>)>
@@ -64,17 +112,6 @@ impl<T> Node<T> {
         }
     }
 
-    pub fn adopt(self: &Rc<Self>, child: &Rc<Self>) { child.attach(self); }
-
-    pub fn attach(self: &Rc<Self>, parent: &Rc<Self>)
-    {
-        self.detach();
-
-        *self.index.borrow_mut() = parent.children.borrow().len();
-        *self.parent.borrow_mut() = Some(Rc::downgrade(&parent));
-        parent.children.borrow_mut().push(self.clone());
-    }
-
     pub fn bfs(self: &Rc<Self>) -> Vec<Rc<Self>> { self.bfs_iter().collect() }
 
     pub fn bfs_iter(self: &Rc<Self>) -> BFSIterator<T>
@@ -84,11 +121,6 @@ impl<T> Node<T> {
 
     pub fn children(&self) -> Ref<Vec<Rc<Node<T>>>> { self.children.borrow() }
 
-    pub fn detach(self: &Rc<Self>)
-    {
-        self.parent().map(|parent| parent.abandon(self));
-    }
-
     pub fn is_leaf(&self) -> bool { self.children.borrow().is_empty() }
     pub fn is_root(&self) -> bool { self.parent.borrow().is_none() }
 
@@ -97,24 +129,10 @@ impl<T> Node<T> {
         self.parent().and_then(|parent| parent.parent())
     }
 
-    pub fn new(value: T) -> Rc<Self>
-    {
-        Rc::new(
-            Node {
-                children: RefCell::new(Vec::new()),
-                index: RefCell::new(usize::default()),
-                parent: RefCell::new(None),
-                value: RefCell::new(value)
-            }
-        )
-    }
-
     pub fn parent(&self) -> Option<Rc<Self>>
     {
         self.parent.borrow().as_ref().and_then(|parent| parent.upgrade())
     }
-
-    pub fn set_value(&self, value: T) { *self.value.borrow_mut() = value; }
 
     pub fn upgrade(self: &Rc<Self>)
     {
@@ -124,6 +142,7 @@ impl<T> Node<T> {
     }
 
     pub fn value(&self) -> Ref<T> { self.value.borrow() }
+    pub fn set_value(&self, value: T) { *self.value.borrow_mut() = value; }
 }
 
 impl<T> BFSIterator<T> {
