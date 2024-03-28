@@ -17,4 +17,5 @@ symm_impl = "0.1.2"
 
 [features]
 default = ["naive"]
+frames = []
 naive = []
