@@ -3,25 +3,34 @@ use polygon::geo::generate_tree_from_polygons;
 
 use polygon::parse_from_file;
 
-use std::env::args;
+use clap::Parser;
+
 use std::path::Path;
-use std::process::ExitCode;
 
-fn main() -> Result<(), ExitCode>
+#[derive(Debug, Parser)]
+#[command(about, version)]
+struct Args
 {
-    if args().len() > 3 {
-        println!("USAGE: {} [-s] <input file>", args().nth(0).unwrap());
+    #[arg(help = "The path of the input file")]
+    path: String,
 
-        return Err(ExitCode::FAILURE);
-    }
+    #[arg(
+        short,
+        long,
+        default_value_t = false,
+        help = "Print the polygons in SVG format"
+    )]
+    show: bool
+}
 
-    let second = args().nth(1).unwrap();
-    let show = second == "-s";
-    let path = if show { args().nth(2).unwrap() } else { second };
-    let path = Path::new(path.as_str());
+fn main()
+{
+    let args = Args::parse();
+
+    let path = Path::new(args.path.as_str());
     let nodes = parse_from_file(path);
 
-    if show {
+    if args.show {
         println!("<svg>");
 
         for node in nodes {
@@ -38,6 +47,4 @@ fn main() -> Result<(), ExitCode>
     }
 
     println!();
-
-    Ok(())
 }

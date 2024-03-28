@@ -1,5 +1,10 @@
 [package]
-authors = ["Mattéo Rossillol‑‑Laruelle <beatussum@protonmail.com>"]
+
+authors = [
+    "Mattéo Rossillol‑‑Laruelle <matteo.rossillol--laruelle@grenoble-inp.org>",
+    "Thomas Vidon <thomas.vidon@grenoble-inp.org>"
+]
+
 categories = ["command-line-utilities", "mathematics"]
 description = "The 2023-2024 algorithmic project at ENSIMAG written in Rust"
 edition = "2021"
@@ -10,6 +15,7 @@ repository = "https://github.com/beatussum/polygon/"
 version = "0.9.0"
 
 [dependencies]
+clap = { version = "4.5.4", features = ["derive"] }
 derive_more = "0.99.17"
 indoc = "2.0.4"
 itertools = "0.12.1"
