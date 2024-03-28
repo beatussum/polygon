@@ -10,8 +10,8 @@ pub use segment::Segment;
 mod vector;
 pub use vector::Vector;
 
-use polygon::Any;
 use super::tree::Node;
+use super::{IndexedNode, IndexedNodes};
 
 use std::collections::VecDeque;
 use std::rc::Rc;
@@ -19,9 +19,6 @@ use std::rc::Rc;
 /*********/
 /* TYPES */
 /*********/
-
-pub type IndexedNode = Rc<Node<(isize, Any)>>;
-pub type IndexedNodes = Vec<IndexedNode>;
 
 pub type Unit = f64;
 

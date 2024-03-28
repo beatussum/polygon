@@ -7,6 +7,10 @@ use clap::{Parser, Subcommand};
 
 use std::path::Path;
 
+/**************/
+/* STRUCTURES */
+/**************/
+
 #[derive(Debug, Subcommand)]
 enum Command
 {
@@ -30,6 +34,10 @@ struct Args
     #[clap(subcommand)]
     command: Command
 }
+
+/*************/
+/* FUNCTIONS */
+/*************/
 
 fn main()
 {

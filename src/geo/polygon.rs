@@ -1,11 +1,19 @@
 use super::SVG;
 use super::Unit;
 
+/***********/
+/* MODULES */
+/***********/
+
 mod any;
 pub use any::Any;
 
 mod rectangle;
 pub use rectangle::Rectangle;
+
+/**********/
+/* TRAITS */
+/**********/
 
 pub trait Polygon: SVG
 {

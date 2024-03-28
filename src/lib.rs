@@ -7,14 +7,25 @@ use std::fs;
 use std::path::Path;
 use std::rc::Rc;
 
+/***********/
+/* MODULES */
+/***********/
+
 pub mod geo;
 pub mod tree;
+
+/*********/
+/* TYPES */
+/*********/
+
+pub type IndexedNode = Rc<Node<(isize, Any)>>;
+pub type IndexedNodes = Vec<IndexedNode>;
 
 /*************/
 /* FUNCTIONS */
 /*************/
 
-pub fn parse_from_string(str: &str) -> Vec<Rc<Node<(isize, Any)>>>
+pub fn parse_from_string(str: &str) -> IndexedNodes
 {
     str
         .lines()
@@ -48,7 +59,7 @@ pub fn parse_from_string(str: &str) -> Vec<Rc<Node<(isize, Any)>>>
         .collect()
 }
 
-pub fn parse_from_file(path: &Path) -> Vec<Rc<Node<(isize, Any)>>>
+pub fn parse_from_file(path: &Path) -> IndexedNodes
 {
     parse_from_string(&fs::read_to_string(path).unwrap())
 }
