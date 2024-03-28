@@ -11,12 +11,17 @@ mod vector;
 pub use vector::Vector;
 
 use polygon::Any;
-#[cfg(feature = "frames")] use polygon::Rectangle;
-
 use super::tree::Node;
 
 use std::collections::VecDeque;
 use std::rc::Rc;
+
+/*********/
+/* TYPES */
+/*********/
+
+pub type IndexedNode = Rc<Node<(isize, Any)>>;
+pub type IndexedNodes = Vec<IndexedNode>;
 
 pub type Unit = f64;
 
@@ -50,23 +55,18 @@ fn are_ccw(&a: &Point, &b: &Point, &c: &Point) -> bool
     Vector::from((a, b)).det(&(a, c).into()) > 0.
 }
 
-#[cfg(feature = "frames")]
-pub fn generate_tree_from_polygons(nodes: &Vec<Rc<Node<(isize, Any)>>>)
-    -> Rc<Node<(isize, Any)>>
+fn build_tree_from_polygons<'a, T:'a , U>(nodes: U) -> Rc<Node<(isize, T)>>
+    where
+        T: Container + Default + Polygon,
+        U: Iterator<Item = &'a Rc<Node<(isize, T)>>>
 {
-    let frames =
-        nodes
-            .iter()
-            .map(|node| node.value())
-            .map(|item| (item.0, item.1.frame()))
-            .map(|item| Node::new(item));
+    let ret = Node::new((-1, T::default()));
 
     let mut placement_queue = VecDeque::new();
-    let root = Node::new((-1, Rectangle::default()));
 
-    for frame in frames {
-        root.adopt(&frame);
-        placement_queue.push_back(frame);
+    for node in nodes {
+        ret.adopt(node);
+        placement_queue.push_back(node.clone());
     }
 
     while !placement_queue.is_empty() {
@@ -93,26 +93,49 @@ pub fn generate_tree_from_polygons(nodes: &Vec<Rc<Node<(isize, Any)>>>)
         }
     }
 
+    ret
+}
+
+#[cfg(feature = "frames")]
+pub fn generate_tree_from_polygons(nodes: &IndexedNodes) -> IndexedNode
+{
+    // Build associated-frames hierarchy.
+
+    let frames =
+        nodes
+            .iter()
+            .map(|node| node.value())
+            .map(|item| (item.0, item.1.frame()))
+            .map(|item| Node::new(item))
+            .collect::<Vec<_>>();
+
+    let root_of_frames = build_tree_from_polygons(frames.iter());
+
+    // Copy the hierarchy to a tree of `Any`s.
+
     let ret = Node::new((-1, Any::default()));
 
     let mut parents_to_place = VecDeque::new();
-    parents_to_place.push_back(ret.clone());
+    parents_to_place.push_back(&ret);
 
     let mut children_to_place = VecDeque::new();
-    children_to_place.push_back(root.children().clone());
+    children_to_place.push_back(root_of_frames.children());
 
     while !parents_to_place.is_empty() {
         let parent = parents_to_place.pop_front().unwrap();
         let children = children_to_place.pop_front().unwrap();
 
         for child in children.iter() {
-            let new_parent = nodes[child.value().0 as usize].clone();
+            let index = child.value().0 as usize;
+            let new_parent = &nodes[index];
 
-            parent.adopt(&new_parent);
+            parent.adopt(new_parent);
             parents_to_place.push_back(new_parent);
-            children_to_place.push_back(child.children().clone());
+            children_to_place.push_back(frames[index].children());
         }
     }
+
+    // Fix false inclusions.
 
     let nodes =
         ret
@@ -127,19 +150,19 @@ pub fn generate_tree_from_polygons(nodes: &Vec<Rc<Node<(isize, Any)>>>)
         if !parent.value().1.contains(child) {
             node.upgrade();
 
-            let brothers =
-                node
-                    .parent()
-                    .unwrap()
-                    .children()
-                    .clone()
-                    .into_iter()
+            let new_parent = node.parent().unwrap();
+            let children = new_parent.children();
+
+            let mut brothers =
+                children
+                    .iter()
                     .filter(|brother| !Rc::ptr_eq(brother, &node))
                     .filter(|brother| !Rc::ptr_eq(brother, &parent))
                     .filter(|brother| brother.value().1.contains(child));
 
-            for brother in brothers {
-                brother.adopt(&node);
+            match brothers.next() {
+                Some(brother) => brother.adopt(&node),
+                None => ()
             }
         }
     }
@@ -148,39 +171,9 @@ pub fn generate_tree_from_polygons(nodes: &Vec<Rc<Node<(isize, Any)>>>)
 }
 
 #[cfg(feature = "naive")]
-pub fn generate_tree_from_polygons(nodes: &Vec<Rc<Node<(isize, Any)>>>)
-    -> Rc<Node<(isize, Any)>>
+pub fn generate_tree_from_polygons(nodes: &IndexedNodes) -> IndexedNode
 {
-    let ret = Node::new((-1, Any::default()));
-
-    let mut placement_queue = VecDeque::new();
-
-    for node in nodes {
-        ret.adopt(node);
-        placement_queue.push_back(node);
-    }
-
-    while !placement_queue.is_empty() {
-        let to_place = placement_queue.pop_front().unwrap();
-        let parent = to_place.parent().unwrap();
-        let brothers = parent.children().clone();
-
-        let brothers =
-            brothers
-                .iter()
-                .filter(|child| !Rc::ptr_eq(child, &to_place));
-
-        for brother in brothers {
-            if brother.value().1.contains(&to_place.value().1) {
-                brother.adopt(&to_place);
-                placement_queue.push_back(to_place);
-
-                break;
-            }
-        }
-    }
-
-    ret
+    build_tree_from_polygons(nodes.iter())
 }
 
 #[cfg(test)]
