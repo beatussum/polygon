@@ -10,7 +10,7 @@ use symm_impl::symmetric;
 /**************/
 
 #[derive(Copy, Clone)]
-#[derive(Debug, Default, Into, PartialEq)]
+#[derive(Debug, Default, Hash, Into, PartialEq)]
 #[derive(Display)]
 #[display(fmt = "[{} ; {}]", start, stop)]
 pub struct Segment { start: Point, stop: Point }

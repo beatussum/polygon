@@ -3,6 +3,8 @@ use super::{Unit, Vector};
 
 use derive_more::{Display, Into, From};
 
+use std::hash::{Hash, Hasher};
+
 /**************/
 /* STRUCTURES */
 /**************/
@@ -28,6 +30,14 @@ impl SVG for Point {
     fn to_svg(&self) -> String
     {
         format!(r#"<circle cx="{}" cy="{}" r="1" />"#, self.x, self.y)
+    }
+}
+
+impl Hash for Point {
+    fn hash<H: Hasher>(&self, state: &mut H)
+    {
+        self.x.to_bits().hash(state);
+        self.y.to_bits().hash(state);
     }
 }
 

@@ -8,7 +8,7 @@ use super::super::{Point, Unit};
 /**************/
 
 #[derive(Clone, Copy)]
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, Hash, PartialEq)]
 pub struct Rectangle { bottom_left: Point, top_right: Point }
 
 /*******************/
