@@ -5,9 +5,16 @@ use itertools::Itertools;
 
 use std::env::args;
 use std::path::Path;
+use std::process::ExitCode;
 
-fn main()
+fn main() -> Result<(), ExitCode>
 {
+    if args().len() != 2 {
+        println!("USAGE: {} <input file>", args().next().unwrap());
+
+        return Err(ExitCode::FAILURE);
+    }
+
     let path = args().nth(1).unwrap();
     let path = Path::new(path.as_str());
     let polygons = parse_from_file(path);
@@ -27,4 +34,6 @@ fn main()
     }
 
     println!();
+
+    Ok(())
 }
