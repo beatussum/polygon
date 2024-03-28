@@ -136,7 +136,7 @@ impl SVG for Any {
 /***************/
 
 impl Container for Any {
-    #[cfg(feature = "stupid")]
+    #[cfg(feature = "naive")]
     fn contains(&self, other: &Self) -> bool
     {
         self.contains(other.points.first().unwrap())
@@ -144,7 +144,7 @@ impl Container for Any {
 }
 
 impl Container<Point> for Any {
-    #[cfg(feature = "stupid")]
+    #[cfg(feature = "naive")]
     fn contains(&self, &other: &Point) -> bool
     {
         fn same_sign(a: Unit, b: Unit) -> bool

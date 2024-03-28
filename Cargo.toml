@@ -16,5 +16,5 @@ itertools = "0.12.1"
 symm_impl = "0.1.2"
 
 [features]
-default = ["stupid"]
-stupid = []
+default = ["naive"]
+naive = []

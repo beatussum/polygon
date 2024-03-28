@@ -48,7 +48,7 @@ fn are_ccw(&a: &Point, &b: &Point, &c: &Point) -> bool
     Vector::from((a, b)).det(&(a, c).into()) > 0.
 }
 
-#[cfg(feature = "stupid")]
+#[cfg(feature = "naive")]
 pub fn generate_tree_from_polygons(polygons: Vec<Any>)
     -> Rc<Node<(isize, Any)>>
 {
