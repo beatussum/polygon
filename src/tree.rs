@@ -1,40 +1,37 @@
-use std::cell::{Ref, RefCell, RefMut};
+use std::cell::{Ref, RefCell};
 use std::cmp::min;
 use std::collections::VecDeque;
 use std::rc::{Rc, Weak};
 
 #[derive(Clone, Debug)]
-pub struct Cell<T>
+pub struct Node<T>
 {
-    children: Vec<Rc<Node<T>>>,
-    index: usize,
-    parent: Option<Weak<Node<T>>>,
-    value: T
+    children: RefCell<Vec<Rc<Node<T>>>>,
+    index: RefCell<usize>,
+    parent: RefCell<Option<Weak<Node<T>>>>,
+    value: RefCell<T>
 }
-
-#[derive(Clone, Debug)]
-pub struct Node<T>(RefCell<Cell<T>>);
 
 pub struct BFSIterator<T> { unexplored: VecDeque<Rc<Node<T>>> }
 
 impl<T> Node<T> {
     pub fn abandon(&self, child: &Rc<Self>)
     {
-        let index = child.borrow().index;
+        let index = *child.index.borrow();
 
-        child.borrow_mut().parent = None;
-        self.borrow_mut().children.swap_remove(index);
+        *child.parent.borrow_mut() = None;
+        self.children.borrow_mut().swap_remove(index);
 
-        let count = self.borrow().children.len();
+        let count = self.children.borrow().len();
 
         if count != 0 {
             let index = min(index, count - 1);
 
-            self
-                .borrow_mut()
-                .children[index]
-                .borrow_mut()
-                .index = index;
+            *self
+                .children
+                .borrow_mut()[index]
+                .index
+                .borrow_mut() = index;
         }
     }
 
@@ -73,9 +70,9 @@ impl<T> Node<T> {
     {
         self.detach();
 
-        self.borrow_mut().index = parent.borrow().children.len();
-        self.borrow_mut().parent = Some(Rc::downgrade(&parent));
-        parent.borrow_mut().children.push(self.clone());
+        *self.index.borrow_mut() = parent.children.borrow().len();
+        *self.parent.borrow_mut() = Some(Rc::downgrade(&parent));
+        parent.children.borrow_mut().push(self.clone());
     }
 
     pub fn bfs(self: &Rc<Self>) -> Vec<Rc<Self>> { self.bfs_iter().collect() }
@@ -85,21 +82,15 @@ impl<T> Node<T> {
         BFSIterator::new(self)
     }
 
-    fn borrow(&self) -> Ref<Cell<T>> { self.0.borrow() }
-    fn borrow_mut(&self) -> RefMut<Cell<T>> { self.0.borrow_mut() }
-
-    pub fn children(&self) -> Ref<Vec<Rc<Node<T>>>>
-    {
-        Ref::map(self.borrow(), |x| &x.children)
-    }
+    pub fn children(&self) -> Ref<Vec<Rc<Node<T>>>> { self.children.borrow() }
 
     pub fn detach(self: &Rc<Self>)
     {
         self.parent().map(|parent| parent.abandon(self));
     }
 
-    pub fn is_leaf(&self) -> bool { self.borrow().children.is_empty() }
-    pub fn is_root(&self) -> bool { self.borrow().parent.is_none() }
+    pub fn is_leaf(&self) -> bool { self.children.borrow().is_empty() }
+    pub fn is_root(&self) -> bool { self.parent.borrow().is_none() }
 
     pub fn grandparent(&self) -> Option<Rc<Self>>
     {
@@ -109,25 +100,21 @@ impl<T> Node<T> {
     pub fn new(value: T) -> Rc<Self>
     {
         Rc::new(
-            Node(
-                RefCell::new(
-                    Cell {
-                        children: Vec::new(),
-                        index: usize::default(),
-                        parent: None,
-                        value
-                    }
-                )
-            )
+            Node {
+                children: RefCell::new(Vec::new()),
+                index: RefCell::new(usize::default()),
+                parent: RefCell::new(None),
+                value: RefCell::new(value)
+            }
         )
     }
 
     pub fn parent(&self) -> Option<Rc<Self>>
     {
-        self.borrow().parent.as_ref().and_then(|parent| parent.upgrade())
+        self.parent.borrow().as_ref().and_then(|parent| parent.upgrade())
     }
 
-    pub fn set_value(&self, value: T) { self.borrow_mut().value = value; }
+    pub fn set_value(&self, value: T) { *self.value.borrow_mut() = value; }
 
     pub fn upgrade(self: &Rc<Self>)
     {
@@ -136,7 +123,7 @@ impl<T> Node<T> {
             .map(|grandparent| self.attach(&grandparent.clone()));
     }
 
-    pub fn value(&self) -> Ref<T> { Ref::map(self.borrow(), |x| &x.value) }
+    pub fn value(&self) -> Ref<T> { self.value.borrow() }
 }
 
 impl<T> BFSIterator<T> {
@@ -159,7 +146,7 @@ impl<T> Iterator for BFSIterator<T> {
         } else {
             let ret = self.unexplored.pop_front().unwrap();
 
-            for i in ret.borrow().children.clone() {
+            for i in ret.children.borrow().clone() {
                 self.unexplored.push_back(i);
             }
 
