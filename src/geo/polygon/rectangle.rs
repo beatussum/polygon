@@ -35,6 +35,32 @@ impl Rectangle {
     }
 
     /***********/
+    /* ACTIONS */
+    /***********/
+
+    pub fn divide_horizontally(&self) -> (Self, Self)
+    {
+        let h = self.height() / 2.;
+        let (x, y) = self.top_right.into();
+        let top = Rectangle::new(self.bottom_left, Point { x, y: y - h });
+        let (x, y) = self.bottom_left.into();
+        let bottom = Rectangle::new(Point { x, y: y + h }, self.top_right);
+
+        (top, bottom)
+    }
+
+    pub fn divide_vertically(&self) -> (Self, Self)
+    {
+        let w = self.width() / 2.;
+        let (x, y) = self.top_right.into();
+        let left = Rectangle::new(self.bottom_left, Point { x: x - w, y });
+        let (x, y) = self.bottom_left.into();
+        let right = Rectangle::new(Point { x: x + w, y }, self.top_right);
+
+        (left, right)
+    }
+
+    /***********/
     /* GETTERS */
     /***********/
 
