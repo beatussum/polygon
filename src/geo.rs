@@ -12,7 +12,9 @@ pub use vector::Vector;
 
 use super::tree::Node;
 use super::{IndexedNode, IndexedNodes};
+
 #[cfg(feature = "frames")] use polygon::Any;
+#[cfg(feature = "frames")] use polygon::Rectangle;
 
 use std::collections::VecDeque;
 use std::rc::Rc;
@@ -53,6 +55,7 @@ fn are_ccw(&a: &Point, &b: &Point, &c: &Point) -> bool
     Vector::from((a, b)).det(&(a, c).into()) > 0.
 }
 
+#[cfg(any(feature = "frames", feature = "naive"))]
 fn build_tree_from_polygons<'a, T:'a , U>(nodes: U) -> Rc<Node<(isize, T)>>
     where
         T: Container + Default + Polygon,
@@ -95,20 +98,23 @@ fn build_tree_from_polygons<'a, T:'a , U>(nodes: U) -> Rc<Node<(isize, T)>>
 }
 
 #[cfg(feature = "frames")]
-pub fn generate_tree_from_polygons(nodes: &IndexedNodes) -> IndexedNode
+fn generate_frames(nodes: &IndexedNodes) -> Vec<Rc<Node<(isize, Rectangle)>>>
 {
-    // Build associated-frames hierarchy.
+    nodes
+        .iter()
+        .map(|node| node.value())
+        .map(|item| (item.0, item.1.frame()))
+        .map(|item| Node::new(item))
+        .collect()
+}
 
-    let frames =
-        nodes
-            .iter()
-            .map(|node| node.value())
-            .map(|item| (item.0, item.1.frame()))
-            .map(|item| Node::new(item))
-            .collect::<Vec<_>>();
-
-    let root_of_frames = build_tree_from_polygons(frames.iter());
-
+#[cfg(feature = "frames")]
+fn transpose_rec_to_any(
+    nodes: &IndexedNodes,
+    frames: &Vec<Rc<Node<(isize, Rectangle)>>>,
+    from: Rc<Node<(isize, Rectangle)>>
+) -> IndexedNode
+{
     // Copy the hierarchy to a tree of `Any`s.
 
     let ret = Node::new((-1, Any::default()));
@@ -117,7 +123,7 @@ pub fn generate_tree_from_polygons(nodes: &IndexedNodes) -> IndexedNode
     parents_to_place.push_back(&ret);
 
     let mut children_to_place = VecDeque::new();
-    children_to_place.push_back(root_of_frames.children());
+    children_to_place.push_back(from.children());
 
     while !parents_to_place.is_empty() {
         let parent = parents_to_place.pop_front().unwrap();
@@ -168,6 +174,15 @@ pub fn generate_tree_from_polygons(nodes: &IndexedNodes) -> IndexedNode
     }
 
     ret
+}
+
+#[cfg(feature = "frames")]
+pub fn generate_tree_from_polygons(nodes: &IndexedNodes) -> IndexedNode
+{
+    let frames = generate_frames(nodes);
+    let from = build_tree_from_polygons(frames.iter());
+
+    transpose_rec_to_any(nodes, &frames, from)
 }
 
 #[cfg(feature = "naive")]
