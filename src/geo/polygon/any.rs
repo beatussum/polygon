@@ -9,7 +9,7 @@ use std::iter::once;
 /* STRUCTURES */
 /**************/
 
-#[derive(Clone, Debug, Default, Hash, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Any { pub points: Vec<Point> }
 
 /*******************/

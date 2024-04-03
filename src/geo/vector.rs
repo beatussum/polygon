@@ -7,7 +7,6 @@ use derive_more::{Display, Into, From, Neg, Sum};
 use symm_impl::symmetric;
 
 use std::error::Error;
-use std::hash::{Hash, Hasher};
 use std::ops::{Mul, MulAssign};
 use std::ops::{Div, DivAssign};
 
@@ -75,14 +74,6 @@ impl Vector {
         } else {
             Ok(self / self.norm())
         }
-    }
-}
-
-impl Hash for Vector {
-    fn hash<H: Hasher>(&self, state: &mut H)
-    {
-        self.x.to_bits().hash(state);
-        self.y.to_bits().hash(state);
     }
 }
 
