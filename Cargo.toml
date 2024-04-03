@@ -12,7 +12,7 @@ keywords = ["ENSIMAG", "polygon"]
 license = "GPL-3.0+"
 name = "polygon"
 repository = "https://github.com/beatussum/polygon/"
-version = "0.9.0"
+version = "0.9.1"
 
 [dependencies]
 clap = { version = "4.5.4", features = ["derive"] }
