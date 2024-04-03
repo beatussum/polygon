@@ -13,7 +13,7 @@ pub use vector::Vector;
 use super::tree::Node;
 use super::{IndexedNode, IndexedNodes};
 
-#[cfg(feature = "frames")] use polygon::Any;
+use polygon::Any;
 #[cfg(feature = "frames")] use polygon::Rectangle;
 
 use std::collections::VecDeque;
@@ -56,7 +56,7 @@ fn are_ccw(&a: &Point, &b: &Point, &c: &Point) -> bool
 }
 
 #[cfg(any(feature = "frames", feature = "naive"))]
-fn build_tree_from_polygons<'a, T:'a , U>(nodes: U) -> Rc<Node<(isize, T)>>
+fn build_tree_from_polygons<'a, T:'a , U>(nodes: U) -> IndexedNode<T>
     where
         T: Container + Default + Polygon,
         U: Iterator<Item = &'a Rc<Node<(isize, T)>>>
@@ -98,7 +98,7 @@ fn build_tree_from_polygons<'a, T:'a , U>(nodes: U) -> Rc<Node<(isize, T)>>
 }
 
 #[cfg(feature = "frames")]
-fn generate_frames(nodes: &IndexedNodes) -> Vec<Rc<Node<(isize, Rectangle)>>>
+fn generate_frames(nodes: &IndexedNodes<Any>) -> IndexedNodes<Rectangle>
 {
     nodes
         .iter()
@@ -110,10 +110,10 @@ fn generate_frames(nodes: &IndexedNodes) -> Vec<Rc<Node<(isize, Rectangle)>>>
 
 #[cfg(feature = "frames")]
 fn transpose_rec_to_any(
-    nodes: &IndexedNodes,
-    frames: &Vec<Rc<Node<(isize, Rectangle)>>>,
-    from: Rc<Node<(isize, Rectangle)>>
-) -> IndexedNode
+    frames: &IndexedNodes<Rectangle>,
+    nodes: &IndexedNodes<Any>,
+    from: IndexedNode<Rectangle>
+) -> IndexedNode<Any>
 {
     // Copy the hierarchy to a tree of `Any`s.
 
@@ -177,16 +177,20 @@ fn transpose_rec_to_any(
 }
 
 #[cfg(feature = "frames")]
-pub fn generate_tree_from_polygons(nodes: &IndexedNodes) -> IndexedNode
+pub fn generate_tree_from_polygons(
+    nodes: &IndexedNodes<Any>
+) -> IndexedNode<Any>
 {
     let frames = generate_frames(nodes);
     let from = build_tree_from_polygons(frames.iter());
 
-    transpose_rec_to_any(nodes, &frames, from)
+    transpose_rec_to_any(&frames, nodes, from)
 }
 
 #[cfg(feature = "naive")]
-pub fn generate_tree_from_polygons(nodes: &IndexedNodes) -> IndexedNode
+pub fn generate_tree_from_polygons(
+    nodes: &IndexedNodes<Any>
+) -> IndexedNode<Any>
 {
     build_tree_from_polygons(nodes.iter())
 }

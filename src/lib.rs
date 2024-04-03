@@ -18,14 +18,14 @@ pub mod tree;
 /* TYPES */
 /*********/
 
-pub type IndexedNode = Rc<Node<(isize, Any)>>;
-pub type IndexedNodes = Vec<IndexedNode>;
+pub type IndexedNode<T>  = Rc<Node<(isize, T)>>;
+pub type IndexedNodes<T> = Vec<IndexedNode<T>>;
 
 /*************/
 /* FUNCTIONS */
 /*************/
 
-pub fn parse_from_string(str: &str) -> IndexedNodes
+pub fn parse_from_string(str: &str) -> IndexedNodes<Any>
 {
     str
         .lines()
@@ -59,7 +59,7 @@ pub fn parse_from_string(str: &str) -> IndexedNodes
         .collect()
 }
 
-pub fn parse_from_file(path: &Path) -> IndexedNodes
+pub fn parse_from_file(path: &Path) -> IndexedNodes<Any>
 {
     parse_from_string(&fs::read_to_string(path).unwrap())
 }
