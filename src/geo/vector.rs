@@ -83,11 +83,20 @@ impl Error for ZeroNormError {}
 /* OPERATORS */
 /*************/
 
-impl PartialEq for Vector {
-    fn eq(&self, other: &Self) -> bool
+impl Div<Unit> for Vector {
+    type Output = Vector;
+
+    fn div(self, rhs: Unit) -> Self::Output
     {
-        self.is_collinear_with(other) &&
-            ((*self - *other).squared_norm() < Unit::EPSILON)
+        Self { x: self.x / rhs, y: self.y / rhs }
+    }
+}
+
+impl DivAssign<Unit> for Vector {
+    fn div_assign(&mut self, rhs: Unit)
+    {
+        self.x /= rhs;
+        self.y /= rhs;
     }
 }
 
@@ -109,20 +118,11 @@ impl MulAssign<Unit> for Vector {
     }
 }
 
-impl Div<Unit> for Vector {
-    type Output = Vector;
-
-    fn div(self, rhs: Unit) -> Self::Output
+impl PartialEq for Vector {
+    fn eq(&self, other: &Self) -> bool
     {
-        Self { x: self.x / rhs, y: self.y / rhs }
-    }
-}
-
-impl DivAssign<Unit> for Vector {
-    fn div_assign(&mut self, rhs: Unit)
-    {
-        self.x /= rhs;
-        self.y /= rhs;
+        self.is_collinear_with(other) &&
+            ((*self - *other).squared_norm() < Unit::EPSILON)
     }
 }
 
@@ -149,6 +149,10 @@ impl From<Segment> for Vector {
 mod tests
 {
     use super::*;
+
+    /*************/
+    /* OPERATORS */
+    /*************/
 
     #[test]
     fn test_det()
@@ -179,6 +183,37 @@ mod tests
         assert_eq!(u.dot(&v), 1.);
         assert_eq!(u.dot(&v), v.dot(&u));
     }
+
+    #[test]
+    fn test_eq_below_epsilon()
+    {
+        let a = Vector { x: 0., y: 1. };
+        let b = Vector { x: Unit::EPSILON / 10., y: 1. };
+
+        assert_eq!(a, b);
+    }
+
+    #[test]
+    fn test_eq_epsilon()
+    {
+        let a = Vector { x: 0., y: 1. };
+        let b = Vector { x: Unit::EPSILON, y: 1. };
+
+        assert_ne!(a, b);
+    }
+
+    #[test]
+    fn test_eq_above_epsilon()
+    {
+        let a = Vector { x: 0., y: 1. };
+        let b = Vector { x: Unit::EPSILON * 10., y: 1. };
+
+        assert_ne!(a, b);
+    }
+
+    /***********/
+    /* GETTERS */
+    /***********/
 
     #[test]
     fn test_collinear_and_orthogonal()
@@ -247,31 +282,4 @@ mod tests
     #[test]
     #[should_panic]
     fn test_unit_zero() { Vector::default().unit().unwrap(); }
-
-    #[test]
-    fn test_eq_below_epsilon()
-    {
-        let a = Vector { x: 0., y: 1. };
-        let b = Vector { x: Unit::EPSILON / 10., y: 1. };
-
-        assert_eq!(a, b);
-    }
-
-    #[test]
-    fn test_eq_epsilon()
-    {
-        let a = Vector { x: 0., y: 1. };
-        let b = Vector { x: Unit::EPSILON, y: 1. };
-
-        assert_ne!(a, b);
-    }
-
-    #[test]
-    fn test_eq_above_epsilon()
-    {
-        let a = Vector { x: 0., y: 1. };
-        let b = Vector { x: Unit::EPSILON * 10., y: 1. };
-
-        assert_ne!(a, b);
-    }
 }

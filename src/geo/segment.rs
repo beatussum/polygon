@@ -38,31 +38,6 @@ impl Segment {
     pub fn length(&self) -> Unit { self.start.distance_from(&self.stop) }
 }
 
-impl Intersecter for Segment {
-    fn intersects(&self, other: &Self) -> bool
-    {
-        let (a, b) = (*self).into();
-        let (c, d) = (*other).into();
-
-        ((a == c) || (a == d) || (b == c) || (b == d)) ||
-            ((are_ccw(&a, &c, &d) != are_ccw(&b, &c, &d)) &&
-            (are_ccw(&a, &b, &c) != are_ccw(&a, &b, &d)))
-    }
-}
-
-impl SVG for Segment {
-    fn to_svg(&self) -> String
-    {
-        format!(
-            r#"<line x1="{}" y1="{}" x2="{}" y2="{}""#,
-            self.start.x,
-            self.start.y,
-            self.stop.x,
-            self.stop.y
-        )
-    }
-}
-
 /***************/
 /* `Container` */
 /***************/
@@ -136,6 +111,31 @@ impl Distance<Point> for Segment {
                 stop.squared_distance_from(other)
             }
         }
+    }
+}
+
+impl Intersecter for Segment {
+    fn intersects(&self, other: &Self) -> bool
+    {
+        let (a, b) = (*self).into();
+        let (c, d) = (*other).into();
+
+        ((a == c) || (a == d) || (b == c) || (b == d)) ||
+            ((are_ccw(&a, &c, &d) != are_ccw(&b, &c, &d)) &&
+            (are_ccw(&a, &b, &c) != are_ccw(&a, &b, &d)))
+    }
+}
+
+impl SVG for Segment {
+    fn to_svg(&self) -> String
+    {
+        format!(
+            r#"<line x1="{}" y1="{}" x2="{}" y2="{}""#,
+            self.start.x,
+            self.start.y,
+            self.stop.x,
+            self.stop.y
+        )
     }
 }
 

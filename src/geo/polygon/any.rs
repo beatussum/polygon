@@ -57,6 +57,77 @@ impl Any {
     }
 }
 
+/***************/
+/* `Container` */
+/***************/
+
+impl Container for Any {
+    fn contains(&self, other: &Self) -> bool
+    {
+        self.contains(other.points.first().unwrap())
+    }
+}
+
+impl Container<Point> for Any {
+    fn contains(&self, &other: &Point) -> bool
+    {
+        fn same_sign(a: Unit, b: Unit) -> bool
+        {
+            a.is_sign_negative() == b.is_sign_negative()
+        }
+
+        let y = self.frame().top_right().y;
+
+        if other.y >= y {
+            false
+        } else {
+            let last = (self.segment(self.len() - 1), self.segment(0));
+            let point = (other.x, y).into();
+            let u = Segment::new(other, point);
+
+            let count =
+                self
+                    .pairs_of_segments()
+                    .chain(once(last))
+                    .map(
+                        |(a, b)| {
+                            if a.intersects(&u) {
+                                if b.intersects(&u) {
+                                    let a: Vector = a.into();
+                                    let b: Vector = b.into();
+                                    let u: Vector = u.into();
+
+
+                                    if same_sign(u.det(&a), u.det(&b)) {
+                                        // Counting 0 instead of 1 because the
+                                        // intersection will be counted with
+                                        // the next segment pair.
+
+                                        0
+                                    } else {
+                                        // Counting 1 instead of 0 allowing the
+                                        // intersection to be counted twice,
+                                        // (once here, once with the next
+                                        // segment pair) which is the same as
+                                        // not being counted at all.
+
+                                        1
+                                    }
+                                } else {
+                                    1
+                                }
+                            } else {
+                                0
+                            }
+                        }
+                    )
+                    .sum::<usize>();
+
+            (count % 2) == 1
+        }
+    }
+}
+
 impl Intersecter for Any {
     fn intersects(&self, other: &Self) -> bool
     {
@@ -153,77 +224,6 @@ impl SVG for Any {
     }
 }
 
-/***************/
-/* `Container` */
-/***************/
-
-impl Container for Any {
-    fn contains(&self, other: &Self) -> bool
-    {
-        self.contains(other.points.first().unwrap())
-    }
-}
-
-impl Container<Point> for Any {
-    fn contains(&self, &other: &Point) -> bool
-    {
-        fn same_sign(a: Unit, b: Unit) -> bool
-        {
-            a.is_sign_negative() == b.is_sign_negative()
-        }
-
-        let y = self.frame().top_right().y;
-
-        if other.y >= y {
-            false
-        } else {
-            let last = (self.segment(self.len() - 1), self.segment(0));
-            let point = (other.x, y).into();
-            let u = Segment::new(other, point);
-
-            let count =
-                self
-                    .pairs_of_segments()
-                    .chain(once(last))
-                    .map(
-                        |(a, b)| {
-                            if a.intersects(&u) {
-                                if b.intersects(&u) {
-                                    let a: Vector = a.into();
-                                    let b: Vector = b.into();
-                                    let u: Vector = u.into();
-
-
-                                    if same_sign(u.det(&a), u.det(&b)) {
-                                        // Counting 0 instead of 1 because the
-                                        // intersection will be counted with
-                                        // the next segment pair.
-
-                                        0
-                                    } else {
-                                        // Counting 1 instead of 0 allowing the
-                                        // intersection to be counted twice,
-                                        // (once here, once with the next
-                                        // segment pair) which is the same as
-                                        // not being counted at all.
-
-                                        1
-                                    }
-                                } else {
-                                    1
-                                }
-                            } else {
-                                0
-                            }
-                        }
-                    )
-                    .sum::<usize>();
-
-            (count % 2) == 1
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests
 {
@@ -265,97 +265,6 @@ mod tests
         let testing = Any { points: vec! [Point::default()] };
 
         assert!(!testing.is_valid());
-    }
-
-    /*****************/
-    /* `Intersecter` */
-    /*****************/
-
-    #[test]
-    fn test_intersects()
-    {
-        let a =
-            Any {
-                points: vec! [
-                    Point { x: 0., y: 0. },
-                    Point { x: 2., y: 0. },
-                    Point { x: 2., y: 2. },
-                    Point { x: 0., y: 2. }
-                ]
-            };
-
-        let b =
-            Any {
-                points: vec! [
-                    Point { x: 1., y: 1. },
-                    Point { x: 3., y: 1. },
-                    Point { x: 3., y: 3. },
-                    Point { x: 1., y: 3. }
-                ]
-            };
-
-        assert!(a.intersects(&b));
-    }
-
-    /*************/
-    /* `Polygon` */
-    /*************/
-
-    #[test]
-    fn test_area()
-    {
-        let testing =
-            Any {
-                points: vec! [
-                    Point { x: -1., y: 0. },
-                    Point { x: 0., y: 1. },
-                    Point { x: 1., y: 0. }
-                ]
-            };
-
-        assert_eq!(testing.area(), 1.)
-    }
-
-    #[test]
-    fn test_frame()
-    {
-        let expected =
-            Rectangle::new(
-                Point { x: -1., y: 0. },
-                Point { x: 1., y: 1. }
-            );
-
-        let testing =
-            Any {
-                points: vec! [
-                    Point { x: -1., y: 0. },
-                    Point { x: 0., y: 1. },
-                    Point { x: 1., y: 0. }
-                ]
-            };
-
-        assert_eq!(testing.frame(), expected);
-    }
-
-    /*********/
-    /* `SVG` */
-    /*********/
-
-    #[test]
-    fn test_get_svg()
-    {
-        let expected = r#"<polygon points="-1,0 0,1 1,0" />"#;
-
-        let testing =
-            Any {
-                points: vec! [
-                    Point { x: -1., y: 0. },
-                    Point { x: 0., y: 1. },
-                    Point { x: 1., y: 0. }
-                ]
-            };
-
-        assert_eq!(testing.to_svg(), expected);
     }
 
     /***************/
@@ -541,5 +450,96 @@ mod tests
             };
 
         assert!(polygon.contains(&point));
+    }
+
+    /*****************/
+    /* `Intersecter` */
+    /*****************/
+
+    #[test]
+    fn test_intersects()
+    {
+        let a =
+            Any {
+                points: vec! [
+                    Point { x: 0., y: 0. },
+                    Point { x: 2., y: 0. },
+                    Point { x: 2., y: 2. },
+                    Point { x: 0., y: 2. }
+                ]
+            };
+
+        let b =
+            Any {
+                points: vec! [
+                    Point { x: 1., y: 1. },
+                    Point { x: 3., y: 1. },
+                    Point { x: 3., y: 3. },
+                    Point { x: 1., y: 3. }
+                ]
+            };
+
+        assert!(a.intersects(&b));
+    }
+
+    /*************/
+    /* `Polygon` */
+    /*************/
+
+    #[test]
+    fn test_area()
+    {
+        let testing =
+            Any {
+                points: vec! [
+                    Point { x: -1., y: 0. },
+                    Point { x: 0., y: 1. },
+                    Point { x: 1., y: 0. }
+                ]
+            };
+
+        assert_eq!(testing.area(), 1.)
+    }
+
+    #[test]
+    fn test_frame()
+    {
+        let expected =
+            Rectangle::new(
+                Point { x: -1., y: 0. },
+                Point { x: 1., y: 1. }
+            );
+
+        let testing =
+            Any {
+                points: vec! [
+                    Point { x: -1., y: 0. },
+                    Point { x: 0., y: 1. },
+                    Point { x: 1., y: 0. }
+                ]
+            };
+
+        assert_eq!(testing.frame(), expected);
+    }
+
+    /*********/
+    /* `SVG` */
+    /*********/
+
+    #[test]
+    fn test_to_svg()
+    {
+        let expected = r#"<polygon points="-1,0 0,1 1,0" />"#;
+
+        let testing =
+            Any {
+                points: vec! [
+                    Point { x: -1., y: 0. },
+                    Point { x: 0., y: 1. },
+                    Point { x: 1., y: 0. }
+                ]
+            };
+
+        assert_eq!(testing.to_svg(), expected);
     }
 }

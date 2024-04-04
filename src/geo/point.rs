@@ -31,15 +31,19 @@ impl SVG for Point {
     }
 }
 
+/*************/
+/* OPERATORS */
+/*************/
+
+impl From<Vector> for Point {
+    fn from(value: Vector) -> Self { Self { x: value.x, y: value.y } }
+}
+
 impl PartialEq for Point {
     fn eq(&self, other: &Self) -> bool
     {
         self.distance_from(other) < Unit::EPSILON
     }
-}
-
-impl From<Vector> for Point {
-    fn from(value: Vector) -> Self { Self { x: value.x, y: value.y } }
 }
 
 #[cfg(test)]

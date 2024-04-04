@@ -197,6 +197,10 @@ mod tests
         (a, f)
     }
 
+    /***********/
+    /* GETTERS */
+    /***********/
+
     #[test]
     fn test_above_correct()
     {
@@ -224,6 +228,10 @@ mod tests
         assert_eq!(n, 2);
         assert!(Rc::ptr_eq(&a, &ancestor.unwrap()));
     }
+
+    /***********/
+    /* ACTIONS */
+    /***********/
 
     #[test]
     fn test_adopt()
