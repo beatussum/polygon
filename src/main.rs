@@ -1,4 +1,6 @@
 use polygon::geo::SVG;
+use polygon::geo::Unit;
+use polygon::geo::generate_polygons;
 use polygon::geo::generate_tree_from_polygons;
 
 use polygon::parse_from_file;
@@ -14,6 +16,31 @@ use std::path::Path;
 #[derive(Debug, Subcommand)]
 enum Command
 {
+    #[command(about = "Generate a `.poly` file")]
+    Generate {
+        #[arg(
+            long,
+            short,
+            help = "The maximum number of corners for each polygon"
+        )]
+
+        corner_count: usize,
+
+        #[arg(long, short, help = "The frame width and height")]
+        dimension: Unit,
+
+        #[arg(
+            long,
+            short,
+            help = "Half of the maximum distance between two corners"
+        )]
+
+        radius: Unit,
+
+        #[arg(long, short, help = "The polygon count")]
+        polygon_count: usize
+    },
+
     #[command(about = "Process the hierarchy generation")]
     Process {
         #[arg(help = "The path of the input file")]
@@ -44,6 +71,26 @@ fn main()
     let args = Args::parse();
 
     match args.command {
+        Command::Generate {
+            corner_count,
+            dimension,
+            radius,
+            polygon_count
+        } => {
+            let polygons = generate_polygons(
+                corner_count,
+                dimension,
+                polygon_count,
+                radius
+            );
+
+            for (index, polygon) in polygons.into_iter().enumerate() {
+                for point in polygon.points() {
+                    println!("{} {} {}", index, point.x, point.y);
+                }
+            }
+        }
+
         Command::Show { path } => {
             let nodes = parse_from_file(Path::new(path.as_str()));
 

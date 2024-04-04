@@ -18,6 +18,23 @@ pub struct Any { pub points: Vec<Point> }
 
 impl Any {
     /***********/
+    /* ACTIONS */
+    /***********/
+
+    pub fn intersects_polygon(&self, other: &Any) -> bool
+    {
+        for a in self.segments() {
+            for b in other.segments() {
+                if a.is_secant_with(&b) {
+                    return true;
+                }
+            }
+        }
+
+        false
+    }
+
+    /***********/
     /* GETTERS */
     /***********/
 
@@ -63,13 +80,20 @@ impl Polygon for Any {
     fn is_valid(&self) -> bool
     {
         if self.points.len() > 2 {
-            let mut iter = self.points.iter();
+            let mut iter = self.segments();
 
             while let Some(i) = iter.next() {
                 let mut iter = iter.clone();
 
                 while let Some(j) = iter.next() {
-                    if i == j {
+                    let common_extremity = {
+                        let (a, b) = i.into();
+                        let (c, d) = j.into();
+
+                        (a == c) || (a == d) || (b == c) || (b == d)
+                    };
+
+                    if !common_extremity && i.is_secant_with(&j) {
                         return false;
                     }
                 }
@@ -207,9 +231,39 @@ mod tests
 {
     use super::*;
 
-    /*************/
-    /* `Polygon` */
-    /*************/
+    /***********/
+    /* ACTIONS */
+    /***********/
+
+    #[test]
+    fn test_intersects_polygon()
+    {
+        let a =
+            Any {
+                points: vec! [
+                    Point { x: 0., y: 0. },
+                    Point { x: 2., y: 0. },
+                    Point { x: 2., y: 2. },
+                    Point { x: 0., y: 2. }
+                ]
+            };
+
+        let b =
+            Any {
+                points: vec! [
+                    Point { x: 1., y: 1. },
+                    Point { x: 3., y: 1. },
+                    Point { x: 3., y: 3. },
+                    Point { x: 1., y: 3. }
+                ]
+            };
+
+        assert!(a.intersects_polygon(&b));
+    }
+
+    /***********/
+    /* GETTERS */
+    /***********/
 
     #[test]
     fn test_is_valid()
@@ -244,6 +298,10 @@ mod tests
 
         assert!(!testing.is_valid());
     }
+
+    /*************/
+    /* `Polygon` */
+    /*************/
 
     #[test]
     fn test_area()
