@@ -1,4 +1,4 @@
-use super::{Container, Distance, SVG};
+use super::{Container, Distance, Intersecter, SVG};
 use super::{Point, Unit, Vector};
 use super::are_ccw;
 
@@ -35,17 +35,19 @@ impl Segment {
     /* OPERATORS */
     /*************/
 
-    pub fn is_secant_with(&self, rhs: &Self) -> bool
+    pub fn length(&self) -> Unit { self.start.distance_from(&self.stop) }
+}
+
+impl Intersecter for Segment {
+    fn intersects(&self, other: &Self) -> bool
     {
         let (a, b) = (*self).into();
-        let (c, d) = (*rhs).into();
+        let (c, d) = (*other).into();
 
         ((a == c) || (a == d) || (b == c) || (b == d)) ||
             ((are_ccw(&a, &c, &d) != are_ccw(&b, &c, &d)) &&
             (are_ccw(&a, &b, &c) != are_ccw(&a, &b, &d)))
     }
-
-    pub fn length(&self) -> Unit { self.start.distance_from(&self.stop) }
 }
 
 impl SVG for Segment {
@@ -96,7 +98,7 @@ impl Distance for Segment {
             )
         }
 
-        if self.is_secant_with(other) {
+        if self.intersects(other) {
             0.
         } else {
             std::cmp::min_by(
@@ -284,30 +286,30 @@ mod tests
         assert_eq!(u.distance_from(&u), 0.);
     }
 
-    /*************/
-    /* OPERATORS */
-    /*************/
+    /*****************/
+    /* `Intersecter` */
+    /*****************/
 
     #[test]
-    fn test_is_secant_with_orthogonal()
+    fn test_intersects_with_orthogonal()
     {
         let a = Segment::new(Point { x: 0., y: 1. }, Point { x: 0., y: 0. });
         let b = Segment::new(Point { x: 0., y: 0. }, Point { x: 1., y: 0. });
 
-        assert!(a.is_secant_with(&b));
+        assert!(a.intersects(&b));
     }
 
     #[test]
-    fn test_is_secant_with_orthogonal_reversed()
+    fn test_intersects_orthogonal_reversed()
     {
         let a = Segment::new(Point { x: 0., y: 1. }, Point { x: 0., y: 0. });
         let b = Segment::new(Point { x: 0., y: 0. }, Point { x: -1., y: 0. });
 
-        assert!(a.is_secant_with(&b));
+        assert!(a.intersects(&b));
     }
 
     #[test]
-    fn test_is_secant_with_non_secant()
+    fn test_intersects_non_secant()
     {
         let a = Segment::new(Point { x: -1., y: -1. }, Point { x: 1., y: 1. });
 
@@ -317,11 +319,11 @@ mod tests
                 Point { x: -1., y: -1. }
             );
 
-        assert!(a.is_secant_with(&b));
+        assert!(a.intersects(&b));
     }
 
     #[test]
-    fn test_is_secant_with_secant()
+    fn test_intersects_with_secant()
     {
         let a =
             Segment::new(
@@ -335,6 +337,6 @@ mod tests
                 Point { x: -1., y: 1. }
             );
 
-        assert!(a.is_secant_with(&b));
+        assert!(a.intersects(&b));
     }
 }

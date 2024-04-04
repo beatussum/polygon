@@ -47,6 +47,11 @@ pub trait Distance<Other = Self>
     fn squared_distance_from(&self, other: &Other) -> Unit;
 }
 
+pub trait Intersecter<Other = Self>
+{
+    fn intersects(&self, other: &Other) -> bool;
+}
+
 pub trait SVG { fn to_svg(&self) -> String; }
 
 /*************/
@@ -130,7 +135,7 @@ pub fn generate_polygons(
             polygon = generate_polygon(center, corner_count, radius);
 
             for j in &ret[..i] {
-                if polygon.intersects_polygon(j) {
+                if polygon.intersects(j) {
                     break;
                 } else {
                     break 'polygons;
