@@ -63,9 +63,7 @@ impl Any {
 
 impl Container for Any {
     fn contains(&self, other: &Self) -> bool
-    {
-        self.contains(other.points.first().unwrap())
-    }
+        { self.contains(&other.points[0]) }
 }
 
 impl Container<Point> for Any {
@@ -185,7 +183,7 @@ impl Polygon for Any {
 
     fn frame(&self) -> Rectangle
     {
-        let first = *self.points.first().unwrap();
+        let first = self.points[0];
         let (mut xmin, mut ymin) = first.into();
         let (mut xmax, mut ymax) = first.into();
 
