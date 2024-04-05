@@ -62,12 +62,7 @@ fn generate_polygon(center: Point, corner_count: usize, radius: Unit) -> Any
     polygon.points.reserve(corner_count);
 
     loop {
-        let mut angles = Vec::new();
-        angles.reserve(corner_count);
-
-        for _ in 0..corner_count {
-            angles.push(rng.gen_range((0.)..(2. * PI)));
-        }
+        let mut angles = (0..corner_count).map(|_| rng.gen_range((0.)..(2. * PI))).collect::<Vec<_>>();
 
         angles.sort_by(Unit::total_cmp);
 
