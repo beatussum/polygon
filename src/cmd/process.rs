@@ -13,7 +13,7 @@ use std::rc::Rc;
 /*************/
 
 #[cfg(feature = "frames")]
-pub fn process(nodes: &IndexedNodes<Any>) -> IndexedNode<Any>
+pub fn process_frames(nodes: &IndexedNodes<Any>) -> IndexedNode<Any>
 {
     let frames = generate_frames(nodes);
     let from = build_tree_from_polygons(frames.iter());
@@ -22,7 +22,7 @@ pub fn process(nodes: &IndexedNodes<Any>) -> IndexedNode<Any>
 }
 
 #[cfg(feature = "naive")]
-pub fn process(nodes: &IndexedNodes<Any>) -> IndexedNode<Any>
+pub fn process_naive(nodes: &IndexedNodes<Any>) -> IndexedNode<Any>
     { build_tree_from_polygons(nodes.iter()) }
 
 #[cfg(any(feature = "frames", feature = "naive"))]

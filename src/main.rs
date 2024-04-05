@@ -1,17 +1,33 @@
-use polygon::cmd::{generate, process};
+use polygon::cmd::generate;
+
+#[cfg(feature = "naive")] use polygon::cmd::process_naive;
+#[cfg(feature = "frames")] use polygon::cmd::process_frames;
 
 use polygon::geo::SVG;
 use polygon::geo::Unit;
 
 use polygon::parse_from_file;
 
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 
 use std::path::Path;
 
 /**************/
 /* STRUCTURES */
 /**************/
+
+#[derive(Copy, Clone)]
+#[derive(Eq, PartialEq)]
+#[derive(Debug, Default, ValueEnum)]
+enum Algorithm
+{
+    #[cfg(feature = "frames")]
+    #[default]
+    Frames,
+
+    #[cfg(feature = "naive")]
+    Naive
+}
 
 #[derive(Debug, Subcommand)]
 enum Command
@@ -43,6 +59,9 @@ enum Command
 
     #[command(about = "Process the hierarchy generation")]
     Process {
+        #[arg(long, short, help = "The algorithm used")]
+        algorithm: Algorithm,
+
         #[arg(help = "The path of the input file")]
         path: String
     },
@@ -103,9 +122,17 @@ fn main()
             println!("</svg>");
         },
 
-        Command::Process { path } => {
+        Command::Process { algorithm, path } => {
             let nodes = parse_from_file(Path::new(path.as_str()));
-            let _root = process(&nodes);
+
+            let _root =
+                match algorithm {
+                    #[cfg(feature = "frames")]
+                    Algorithm::Frames => process_frames(&nodes),
+
+                    #[cfg(feature = "naive")]
+                    Algorithm::Naive => process_naive(&nodes)
+                };
 
             for node in nodes {
                 print!("{} ", node.parent().unwrap().value().0);

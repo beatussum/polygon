@@ -2,4 +2,5 @@ pub mod generate;
 pub use generate::generate;
 
 pub mod process;
-pub use process::process;
+#[cfg(feature = "frames")] pub use process::process_frames;
+#[cfg(feature = "naive")] pub use process::process_naive;
