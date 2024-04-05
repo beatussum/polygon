@@ -1,7 +1,7 @@
+use polygon::cmd::{generate, process};
+
 use polygon::geo::SVG;
 use polygon::geo::Unit;
-use polygon::geo::generate_polygons;
-use polygon::geo::generate_tree_from_polygons;
 
 use polygon::parse_from_file;
 
@@ -77,7 +77,7 @@ fn main()
             radius,
             polygon_count
         } => {
-            let polygons = generate_polygons(
+            let polygons = generate(
                 corner_count,
                 dimension,
                 polygon_count,
@@ -105,7 +105,7 @@ fn main()
 
         Command::Process { path } => {
             let nodes = parse_from_file(Path::new(path.as_str()));
-            let _root = generate_tree_from_polygons(&nodes);
+            let _root = process(&nodes);
 
             for node in nodes {
                 print!("{} ", node.parent().unwrap().value().0);

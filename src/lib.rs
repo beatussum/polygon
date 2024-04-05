@@ -11,6 +11,7 @@ use std::rc::Rc;
 /* MODULES */
 /***********/
 
+pub mod cmd;
 pub mod geo;
 pub mod tree;
 
