@@ -23,7 +23,6 @@ rand = "0.8.5"
 symm_impl = "0.1.2"
 
 [features]
-default = ["dac", "frames", "naive"]
-dac = []
+default = ["frames", "naive"]
 frames = []
 naive = []
