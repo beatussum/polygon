@@ -2,8 +2,10 @@ use super::super::tree::Node;
 use super::super::{IndexedNode, IndexedNodes};
 
 use super::super::geo::polygon::Any;
-#[cfg(feature = "frames")] use super::super::geo::polygon::Rectangle;
 use super::super::geo::{Container, Polygon};
+#[cfg(feature = "dac")] use super::super::geo::polygon::frame_of;
+#[cfg(feature = "dac")] use super::super::geo::Segment;
+#[cfg(feature = "frames")] use super::super::geo::polygon::Rectangle;
 
 use std::collections::VecDeque;
 use std::rc::Rc;
@@ -11,6 +13,32 @@ use std::rc::Rc;
 /*************/
 /* FUNCTIONS */
 /*************/
+
+#[cfg(feature = "dac")]
+pub fn process_dac(nodes: &IndexedNodes<Any>) -> IndexedNode<Any>
+{
+    let frames = generate_frames(nodes);
+
+    let big_frame = {
+        let points =
+            frames
+                .iter()
+                .map(
+                    |frame| {
+                        let value = &frame.value().1;
+
+                        [value.bottom_left(), value.top_right()]
+                    }
+                )
+                .flatten();
+
+        frame_of(points)
+    };
+
+    let from = divide(frames.clone(), big_frame);
+
+    transpose_rec_to_any(&frames, nodes, from)
+}
 
 #[cfg(feature = "frames")]
 pub fn process_frames(nodes: &IndexedNodes<Any>) -> IndexedNode<Any>
@@ -65,6 +93,143 @@ fn build_tree_from_polygons<'a, T:'a , U>(nodes: U) -> IndexedNode<T>
     }
 
     ret
+}
+
+#[cfg(feature = "dac")]
+fn split(
+    frames: IndexedNodes<Rectangle>,
+    separator: Segment
+) -> (IndexedNodes<Rectangle>, IndexedNodes<Rectangle>)
+{
+    use super::super::geo::Vector;
+
+    let u: Vector = separator.into();
+
+    let ret_a =
+        frames
+            .iter()
+
+            .filter(
+                |frame| {
+                    frame
+                        .value()
+                        .1
+                        .polygon()
+                        .points()
+                        .map(|point| (*separator.start(), *point).into())
+                        .any(|v| u.det(&v) > 0.)
+                }
+            )
+
+            .cloned()
+            .collect();
+
+    let ret_b =
+        frames
+            .into_iter()
+
+            .filter(
+                |frame| {
+                    frame
+                        .value()
+                        .1
+                        .polygon()
+                        .points()
+                        .map(|point| (*separator.start(), *point).into())
+                        .any(|v| u.det(&v) < 0.)
+                }
+            )
+
+            .collect();
+
+    (ret_a, ret_b)
+}
+
+#[cfg(feature = "dac")]
+fn conquer(
+    a: IndexedNode<Rectangle>,
+    b: IndexedNode<Rectangle>
+) -> IndexedNode<Rectangle>
+{
+    'a : while !a.is_leaf() {
+        let a = a.children()[0].clone();
+
+        for i in 0..(b.children().len()) {
+            if b.children()[i].value().1.contains(&a.value().1) {
+                b.children()[i].adopt(&a);
+                continue 'a;
+            }
+        }
+
+        b.adopt(&a);
+    }
+
+    b
+}
+
+#[cfg(feature = "dac")]
+fn divide(
+    frames: IndexedNodes<Rectangle>,
+    big_frame: Rectangle
+) -> IndexedNode<Rectangle>
+{
+    let mut root = Node::new((-1, Rectangle::default()));
+
+    match frames.len() {
+        0 => (),
+        1 => root.adopt(&frames[0]),
+
+        2 => {
+            let a = &frames[0].value().1;
+            let b = &frames[1].value().1;
+
+            if a.contains(b) {
+                root.adopt(&frames[0]);
+                frames[0].adopt(&frames[1]);
+            } else if b.contains(a) {
+                root.adopt(&frames[1]);
+                frames[1].adopt(&frames[0]);
+            } else {
+                root.adopt(&frames[0]);
+                root.adopt(&frames[1]);
+            }
+        }
+
+        _ => {
+            let n = frames.len();
+
+            let (mut rect_a, mut separator, mut rect_b) =
+                big_frame.divide_vertically();
+
+            let (mut a, mut b) = split(frames.clone(), separator);
+
+            if (a.len() == n) || (b.len() == n) {
+                (rect_a, separator, rect_b) = big_frame.divide_horizontally();
+
+                (a, b) = split(frames, separator);
+            }
+
+            let to_order = {
+                if a.len() == n {
+                    Some(&a)
+                } else if b.len() == n {
+                    Some(&b)
+                } else {
+                    None
+                }
+            };
+
+            root =
+                match to_order {
+                    Some(to_order)
+                        => build_tree_from_polygons(to_order.iter()),
+
+                    None => conquer(divide(a, rect_a), divide(b, rect_b))
+                }
+        }
+    }
+
+    root
 }
 
 #[cfg(feature = "frames")]

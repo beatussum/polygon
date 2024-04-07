@@ -1,7 +1,8 @@
-use super::{Polygon, Rectangle};
-
 use super::super::{Container, Intersecter, SVG};
 use super::super::{Point, Segment, Unit, Vector};
+
+use super::{Polygon, Rectangle};
+use super::frame_of;
 
 use std::iter::once;
 
@@ -181,30 +182,7 @@ impl Polygon for Any {
             .abs() / 2.
     }
 
-    fn frame(&self) -> Rectangle
-    {
-        let first = self.points[0];
-        let (mut xmin, mut ymin) = first.into();
-        let (mut xmax, mut ymax) = first.into();
-
-        for &p in self.points().skip(1) {
-            let (x, y) = p.into();
-
-            if x < xmin {
-                xmin = x;
-            } else if x > xmax {
-                xmax = x;
-            }
-
-            if y < ymin {
-                ymin = y;
-            } else if y > ymax {
-                ymax = y;
-            }
-        }
-
-        Rectangle::new((xmin, ymin).into(), (xmax, ymax).into())
-    }
+    fn frame(&self) -> Rectangle { frame_of(self.points().cloned()) }
 }
 
 impl SVG for Any {

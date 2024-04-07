@@ -1,5 +1,6 @@
 use polygon::cmd::generate;
 
+#[cfg(feature = "dac")] use polygon::cmd::process_dac;
 #[cfg(feature = "naive")] use polygon::cmd::process_naive;
 #[cfg(feature = "frames")] use polygon::cmd::process_frames;
 
@@ -21,6 +22,9 @@ use std::path::Path;
 #[derive(Debug, Default, ValueEnum)]
 enum Algorithm
 {
+    #[cfg(feature = "dac")]
+    DAC,
+
     #[cfg(feature = "frames")]
     #[default]
     Frames,
@@ -127,6 +131,9 @@ fn main()
 
             let _root =
                 match algorithm {
+                    #[cfg(feature = "dac")]
+                    Algorithm::DAC => process_dac(&nodes),
+
                     #[cfg(feature = "frames")]
                     Algorithm::Frames => process_frames(&nodes),
 

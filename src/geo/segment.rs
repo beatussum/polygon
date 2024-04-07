@@ -31,11 +31,13 @@ impl Segment {
         Self { start, stop }
     }
 
-    /*************/
-    /* OPERATORS */
-    /*************/
+    /***********/
+    /* GETTERS */
+    /***********/
 
     pub fn length(&self) -> Unit { self.start.distance_from(&self.stop) }
+    pub fn start(&self) -> &Point { &self.start }
+    pub fn stop(&self) -> &Point { &self.stop }
 }
 
 /***************/
